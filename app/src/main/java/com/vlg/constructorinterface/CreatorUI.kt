@@ -16,6 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.toColorInt
 import androidx.core.view.isEmpty
 import androidx.core.widget.doOnTextChanged
+import java.util.UUID
 
 class CreatorUI(private val context: Context, private val layoutInflater: LayoutInflater) {
 
@@ -23,11 +24,14 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
     private var lastClickedView: View? = null
     private var elementCounter = 1
     private var currentHighlightedRow: LinearLayout? = null
+    private val elementsMap = mutableMapOf<String, View>()
 
     fun getElementCounter() = elementCounter
     fun setElementCounter(i: Int) {
         this.elementCounter = i
     }
+
+    fun getElementsMap() = elementsMap
 
     fun handleExistingElementMove(workArea: LinearLayout, element: View, x: Float, y: Float) {
         Log.d("DragDebug", "handleExistingElementMove")
@@ -53,6 +57,10 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
             "BUTTON" -> createButton()
             else -> createTextView()
         }.apply {
+            val elementId = UUID.randomUUID().toString()
+            this.tag = elementId
+            elementsMap[elementId] = this
+
             setOnLongClickListener { view ->
                 Log.d("DragDebug", "Long click on existing element")
                 val type = when (view) {
@@ -77,7 +85,7 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
             }
 
             setOnClickListener {
-                handleDoubleClick( this)
+                handleDoubleClick(this)
             }
         }
     }
@@ -94,13 +102,13 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
             when (view) {
                 is TextView -> {
                     if (view !is Button && view !is EditText) {
-                        Toast.makeText(context, "Текстовое поле №${view.tag}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Текстовое поле", Toast.LENGTH_SHORT).show()
                     } else if (view is Button) {
-                        Toast.makeText(context, "Кнопка №${view.tag}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Кнопка", Toast.LENGTH_SHORT).show()
                     }
                 }
                 is Button -> {
-                    Toast.makeText(context, "Кнопка №${view.tag}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Кнопка", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -110,6 +118,12 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
     }
 
     fun deleteElementWithAnimation(workArea: LinearLayout, element: View) {
+        // Удаляем элемент из мапы
+        val elementId = element.tag?.toString()
+        if (elementId != null) {
+            elementsMap.remove(elementId)
+        }
+
         element.animate()
             .alpha(0f)
             .scaleX(0.5f)
@@ -214,6 +228,7 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
     fun showRenameDialog(layoutInflater: LayoutInflater, view: View) {
         val currentText = when (view) {
             is TextView -> view.text.toString()
+            is EditText -> view.hint.toString()
             is Button -> view.text.toString()
             else -> ""
         }
@@ -240,7 +255,6 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
                         is EditText -> view.hint = newText
                         is TextView -> view.text = newText
                         is Button -> view.text = newText
-
                     }
                     Toast.makeText(context, "Текст изменен", Toast.LENGTH_SHORT).show()
                 }
@@ -255,38 +269,47 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
     }
 
     fun createTextView(): TextView {
-        return TextView(context).apply {
+        val textView = TextView(context).apply {
             text = "Текст $elementCounter"
             textSize = 18f
             setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
             setBackgroundResource(R.drawable.element_background)
-            tag = elementCounter++
+            tag = UUID.randomUUID().toString() // Используем UUID вместо числа
             gravity = android.view.Gravity.CENTER
             isClickable = true
         }
+        elementsMap[textView.tag.toString()] = textView // Сохраняем в мапу
+        elementCounter++
+        return textView
     }
 
     fun createEditText(): EditText {
-        return EditText(context).apply {
+        val editText = EditText(context).apply {
             hint = "Введите текст $elementCounter"
             textSize = 16f
             setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
             setBackgroundResource(R.drawable.element_background)
-            tag = elementCounter++
+            tag = UUID.randomUUID().toString() // Используем UUID вместо числа
             gravity = android.view.Gravity.CENTER_VERTICAL
             isClickable = true
         }
+        elementsMap[editText.tag.toString()] = editText // Сохраняем в мапу
+        elementCounter++
+        return editText
     }
 
     fun createButton(): Button {
-        return Button(context).apply {
+        val button = Button(context).apply {
             text = "Кнопка $elementCounter"
             textSize = 16f
             setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
             setBackgroundResource(R.drawable.button_background)
-            tag = elementCounter++
+            tag = UUID.randomUUID().toString()
             isClickable = true
         }
+        elementsMap[button.tag.toString()] = button
+        elementCounter++
+        return button
     }
 
     fun addElementToWorkArea(workArea: LinearLayout, element: View, x: Float, y: Float) {
@@ -467,5 +490,4 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
     fun dpToPx(dp: Int): Int {
         return (dp * context.resources.displayMetrics.density).toInt()
     }
-
 }

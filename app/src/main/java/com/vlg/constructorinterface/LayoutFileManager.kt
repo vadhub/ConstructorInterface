@@ -170,7 +170,6 @@ class LayoutFileManager(private val context: Context) {
     fun getLayoutFileInfo(): FileInfo {
         return try {
             val layoutFile = File(context.filesDir, LAYOUT_FILE_NAME)
-            val counterFile = File(context.filesDir, COUNTER_FILE_NAME)
 
             if (layoutFile.exists()) {
                 val size = layoutFile.length() / 1024.0

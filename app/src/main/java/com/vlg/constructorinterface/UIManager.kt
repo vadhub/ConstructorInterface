@@ -9,7 +9,6 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.isEmpty
-import java.util.UUID
 
 class UIManager(private val context: Context, private val creatorUI: CreatorUI) {
 
@@ -40,6 +39,10 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                     gravity = android.view.Gravity.CENTER_VERTICAL
                     isClickable = true
                     elementsMap[elementData.id] = this
+
+                    elementData.text?.let {
+                        setText(it)
+                    }
                 }
             }
             "BUTTON" -> {
@@ -86,18 +89,70 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
     fun saveCurrentLayout(workArea: LinearLayout): String {
         val rows = mutableListOf<RowData>()
 
+        Log.d("SaveDebug", "=== НАЧАЛО СОХРАНЕНИЯ ===")
+        Log.d("SaveDebug", "Количество строк в workArea: ${workArea.childCount}")
+
         for (i in 0 until workArea.childCount) {
             val child = workArea.getChildAt(i)
+            Log.d("SaveDebug", "Строка $i: класс=${child.javaClass.simpleName}")
+
             if (child is LinearLayout && child.orientation == LinearLayout.HORIZONTAL) {
                 val elements = mutableListOf<UiElement>()
 
+                Log.d("SaveDebug", "  Количество элементов в строке: ${child.childCount}")
+
                 for (j in 0 until child.childCount) {
                     val element = child.getChildAt(j)
-                    val elementId = element.tag?.toString() ?: UUID.randomUUID().toString()
+                    val elementId = element.tag?.toString()
+
+                    if (elementId == null) {
+                        Log.d("SaveDebug", "  Элемент $j: НЕТ ТЕГА! класс=${element.javaClass.simpleName}")
+                        continue
+                    }
+
+                    Log.d("SaveDebug", "  Элемент $j: класс=${element.javaClass.simpleName}, tag=$elementId")
 
                     val uiElement = when (element) {
+                        is EditText -> {
+                            Log.d("SaveDebug", "    Это EditText: hint=${element.hint}, text=${element.text}")
+                            UiElement(
+                                id = elementId,
+                                type = "EDITTEXT",
+                                hint = element.hint?.toString() ?: "",
+                                text = element.text?.toString() ?: "",
+                                position = Position(
+                                    row = i,
+                                    column = j,
+                                    weight = getElementWeight(element),
+                                    rowIndex = i
+                                ),
+                                size = Size(
+                                    width = creatorUI.dpToPx(300),
+                                    height = creatorUI.dpToPx(100)
+                                )
+                            )
+                        }
+                        is Button -> {
+                            Log.d("SaveDebug", "    Это Button: text=${element.text}")
+                            UiElement(
+                                id = elementId,
+                                type = "BUTTON",
+                                text = element.text.toString(),
+                                position = Position(
+                                    row = i,
+                                    column = j,
+                                    weight = getElementWeight(element),
+                                    rowIndex = i
+                                ),
+                                size = Size(
+                                    width = creatorUI.dpToPx(200),
+                                    height = creatorUI.dpToPx(100)
+                                )
+                            )
+                        }
                         is TextView -> {
-                            if (element !is Button && element !is EditText) {
+                            run {
+                                Log.d("SaveDebug", "    Это TextView: text=${element.text}")
                                 UiElement(
                                     id = elementId,
                                     type = "TEXTVIEW",
@@ -113,50 +168,21 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                                         height = creatorUI.dpToPx(100)
                                     )
                                 )
-                            } else if (element is Button) {
-                                UiElement(
-                                    id = elementId,
-                                    type = "BUTTON",
-                                    text = element.text.toString(),
-                                    position = Position(
-                                        row = i,
-                                        column = j,
-                                        weight = getElementWeight(element),
-                                        rowIndex = i
-                                    ),
-                                    size = Size(
-                                        width = creatorUI.dpToPx(200),
-                                        height = creatorUI.dpToPx(100)
-                                    )
-                                )
-                            } else {
-                                null
                             }
-                        }
-                        is EditText -> {
-                            UiElement(
-                                id = elementId,
-                                type = "EDITTEXT",
-                                hint = element.hint.toString(),
-                                position = Position(
-                                    row = i,
-                                    column = j,
-                                    weight = getElementWeight(element),
-                                    rowIndex = i
-                                ),
-                                size = Size(
-                                    width = creatorUI.dpToPx(300),
-                                    height = creatorUI.dpToPx(100)
-                                )
-                            )
                         }
                         else -> null
                     }
 
-                    uiElement?.let { elements.add(it) }
+                    uiElement?.let {
+                        elements.add(it)
+                        Log.d("SaveDebug", "    Добавлен элемент типа ${it.type}")
+                    }
                 }
 
                 rows.add(RowData(elements))
+                Log.d("SaveDebug", "  Строка $i сохранена: ${elements.size} элементов")
+            } else {
+                Log.d("SaveDebug", "  Строка $i не является горизонтальным LinearLayout")
             }
         }
 
@@ -167,7 +193,9 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
         )
 
         val json = LayoutSerializer.saveLayout(layout)
-        Log.d("LayoutSave", "Layout saved: ${rows.size} rows, ${rows.sumOf { it.elements.size }} elements")
+        Log.d("SaveDebug", "=== КОНЕЦ СОХРАНЕНИЯ ===")
+        Log.d("SaveDebug", "Всего строк: ${rows.size}, элементов: ${rows.sumOf { it.elements.size }}")
+        Log.d("SaveDebug", "JSON: $json")
 
         return json
     }
