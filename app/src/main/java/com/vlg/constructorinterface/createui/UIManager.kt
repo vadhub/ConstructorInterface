@@ -1,21 +1,24 @@
-package com.vlg.constructorinterface
+package com.vlg.constructorinterface.createui
 
 import android.content.ClipData
 import android.content.Context
 import android.util.Log
+import android.view.Gravity
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.isEmpty
+import com.vlg.constructorinterface.filemanager.LayoutFileManager
+import com.vlg.constructorinterface.R
 
 class UIManager(private val context: Context, private val creatorUI: CreatorUI) {
 
     private val elementsMap = mutableMapOf<String, View>()
     private var layoutFileManager: LayoutFileManager = LayoutFileManager(context)
 
-    fun createElementFromData(elementData: UiElement, trashArea: LinearLayout, placementHint: TextView): View {
+    fun createElementFromData(elementData: UiElement, trashArea: LinearLayout? = null, placementHint: TextView? = null): View {
         return when (elementData.type) {
             "TEXTVIEW" -> {
                 TextView(context).apply {
@@ -24,7 +27,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                     setPadding(creatorUI.dpToPx(16), creatorUI.dpToPx(8), creatorUI.dpToPx(16), creatorUI.dpToPx(8))
                     setBackgroundResource(R.drawable.element_background)
                     tag = elementData.id
-                    gravity = android.view.Gravity.CENTER
+                    gravity = Gravity.CENTER
                     isClickable = true
                     elementsMap[elementData.id] = this
                 }
@@ -36,7 +39,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                     setPadding(creatorUI.dpToPx(16), creatorUI.dpToPx(8), creatorUI.dpToPx(16), creatorUI.dpToPx(8))
                     setBackgroundResource(R.drawable.element_background)
                     tag = elementData.id
-                    gravity = android.view.Gravity.CENTER_VERTICAL
+                    gravity = Gravity.CENTER_VERTICAL
                     isClickable = true
                     elementsMap[elementData.id] = this
 
@@ -73,9 +76,9 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                 val shadowBuilder = View.DragShadowBuilder(view)
                 view.startDragAndDrop(data, shadowBuilder, view, 0)
 
-                placementHint.visibility = View.VISIBLE
-                placementHint.text = "Перетащите элемент. Отпустите для размещения в строке"
-                trashArea.visibility = View.VISIBLE
+                placementHint?.visibility = View.VISIBLE
+                placementHint?.text = "Перетащите элемент. Отпустите для размещения в строке"
+                trashArea?.visibility = View.VISIBLE
 
                 true
             }
@@ -224,7 +227,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
         }
     }
 
-    fun restoreLayout(layout: UiLayout, workArea: LinearLayout, placementHint: TextView, trashArea: LinearLayout) {
+    fun restoreLayout(layout: UiLayout, workArea: LinearLayout, placementHint: TextView? = null, trashArea: LinearLayout? = null) {
         workArea.removeAllViews()
         elementsMap.clear()
 

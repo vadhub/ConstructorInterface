@@ -1,8 +1,7 @@
-package com.vlg.constructorinterface
+package com.vlg.constructorinterface.createui
 
 import android.app.Activity
 import android.content.ClipData
-import android.content.Context
 import android.util.Log
 import android.view.DragEvent
 import android.view.View
@@ -13,6 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.toColorInt
+import com.vlg.constructorinterface.R
 
 class DragManager(private val workArea: LinearLayout, private val activity: Activity, private val creatorUI: CreatorUI) {
 

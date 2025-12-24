@@ -1,4 +1,4 @@
-package com.vlg.constructorinterface
+package com.vlg.constructorinterface.createui
 
 import com.google.gson.Gson
 

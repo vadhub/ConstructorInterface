@@ -1,9 +1,10 @@
-package com.vlg.constructorinterface
+package com.vlg.constructorinterface.createui
 
 import android.content.ClipData
 import android.content.Context
 import android.graphics.Color
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,26 +13,25 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.toColorInt
 import androidx.core.view.isEmpty
-import androidx.core.widget.doOnTextChanged
+import com.vlg.constructorinterface.ElementAction
+import com.vlg.constructorinterface.R
 import java.util.UUID
 
-class CreatorUI(private val context: Context, private val layoutInflater: LayoutInflater) {
+class CreatorUI(private val context: Context, private val layoutInflater: LayoutInflater, private val settingComponentDialog: SettingComponentDialog? = null) {
 
     private var lastClickTime: Long = 0
     private var lastClickedView: View? = null
     private var elementCounter = 1
     private var currentHighlightedRow: LinearLayout? = null
     private val elementsMap = mutableMapOf<String, View>()
+    private val actions: MutableList<ElementAction> = mutableListOf()
 
     fun getElementCounter() = elementCounter
     fun setElementCounter(i: Int) {
         this.elementCounter = i
     }
-
-    fun getElementsMap() = elementsMap
 
     fun handleExistingElementMove(workArea: LinearLayout, element: View, x: Float, y: Float) {
         Log.d("DragDebug", "handleExistingElementMove")
@@ -95,7 +95,7 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
         val timeDiff = currentTime - lastClickTime
 
         if (lastClickedView == view && timeDiff < 300) {
-            showRenameDialog(layoutInflater, view)
+            settingComponentDialog?.showDialog(layoutInflater, view, actions)
             lastClickTime = 0
             lastClickedView = null
         } else {
@@ -151,7 +151,7 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
             text = "Перетащите компоненты сюда"
             textSize = 16f
             setTextColor(Color.DKGRAY)
-            gravity = android.view.Gravity.CENTER
+            gravity = Gravity.CENTER
             alpha = 0f
         }
 
@@ -159,7 +159,7 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
             LinearLayout.LayoutParams.WRAP_CONTENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         ).apply {
-            gravity = android.view.Gravity.CENTER
+            gravity = Gravity.CENTER
         }
 
         hintView.layoutParams = params
@@ -169,6 +169,16 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
             .alpha(1f)
             .setDuration(300)
             .start()
+    }
+
+    fun clearHighlights(workArea: LinearLayout) {
+        for (i in 0 until workArea.childCount) {
+            val child = workArea.getChildAt(i)
+            if (child is LinearLayout && child.orientation == LinearLayout.HORIZONTAL) {
+                child.setBackgroundColor(Color.TRANSPARENT)
+            }
+        }
+        currentHighlightedRow = null
     }
 
     fun findDropTarget(workArea: LinearLayout, y: Float, placementHint: TextView) {
@@ -215,59 +225,6 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
         }
     }
 
-    fun clearHighlights(workArea: LinearLayout) {
-        for (i in 0 until workArea.childCount) {
-            val child = workArea.getChildAt(i)
-            if (child is LinearLayout && child.orientation == LinearLayout.HORIZONTAL) {
-                child.setBackgroundColor(Color.TRANSPARENT)
-            }
-        }
-        currentHighlightedRow = null
-    }
-
-    fun showRenameDialog(layoutInflater: LayoutInflater, view: View) {
-        val currentText = when (view) {
-            is TextView -> view.text.toString()
-            is EditText -> view.hint.toString()
-            is Button -> view.text.toString()
-            else -> ""
-        }
-
-        val dialogView = layoutInflater.inflate(R.layout.dialog_rename, null)
-        val editText = dialogView.findViewById<EditText>(R.id.renameEditText)
-        val charCount = dialogView.findViewById<TextView>(R.id.charCount)
-
-        editText.setText(currentText)
-        editText.setSelection(currentText.length)
-
-        editText.doOnTextChanged { text, _, _, _ ->
-            val count = text?.length ?: 0
-            charCount.text = "$count/50"
-        }
-
-        val dialog = AlertDialog.Builder(context)
-            .setTitle("Переименование")
-            .setView(dialogView)
-            .setPositiveButton("Сохранить") { _, _ ->
-                val newText = editText.text.toString().trim()
-                if (newText.isNotEmpty()) {
-                    when (view) {
-                        is EditText -> view.hint = newText
-                        is TextView -> view.text = newText
-                        is Button -> view.text = newText
-                    }
-                    Toast.makeText(context, "Текст изменен", Toast.LENGTH_SHORT).show()
-                }
-            }
-            .setNegativeButton("Отмена", null)
-            .create()
-
-        dialog.show()
-
-        charCount.text = "${currentText.length}/50"
-        editText.requestFocus()
-    }
-
     fun createTextView(): TextView {
         val textView = TextView(context).apply {
             text = "Текст $elementCounter"
@@ -275,7 +232,7 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
             setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
             setBackgroundResource(R.drawable.element_background)
             tag = UUID.randomUUID().toString() // Используем UUID вместо числа
-            gravity = android.view.Gravity.CENTER
+            gravity = Gravity.CENTER
             isClickable = true
         }
         elementsMap[textView.tag.toString()] = textView // Сохраняем в мапу
@@ -290,7 +247,7 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
             setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
             setBackgroundResource(R.drawable.element_background)
             tag = UUID.randomUUID().toString() // Используем UUID вместо числа
-            gravity = android.view.Gravity.CENTER_VERTICAL
+            gravity = Gravity.CENTER_VERTICAL
             isClickable = true
         }
         elementsMap[editText.tag.toString()] = editText // Сохраняем в мапу
@@ -384,9 +341,7 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
         )
 
         newRow.addView(element)
-
         workArea.addView(newRow, rowIndex)
-
         Log.d("DragDebug", "Created new row above with 1 element")
     }
 

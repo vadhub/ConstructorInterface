@@ -9,6 +9,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import com.vlg.constructorinterface.createui.CreatorUI
+import com.vlg.constructorinterface.createui.DragManager
+import com.vlg.constructorinterface.createui.SettingComponentDialog
+import com.vlg.constructorinterface.createui.UIManager
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         val editTextPalette = findViewById<LinearLayout>(R.id.editTextPalette)
         val buttonPalette = findViewById<LinearLayout>(R.id.buttonPalette)
 
-        creatorUI = CreatorUI(this, layoutInflater)
+        creatorUI = CreatorUI(this, layoutInflater, SettingComponentDialog(this))
         val dragManager = DragManager(workArea, this, creatorUI)
         uiManager = UIManager(this, creatorUI)
 
