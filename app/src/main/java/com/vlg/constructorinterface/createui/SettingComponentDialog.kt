@@ -3,6 +3,7 @@ package com.vlg.constructorinterface.createui
 import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.AdapterView
@@ -75,8 +76,8 @@ class SettingComponentDialog(private val context: Context) {
                 }
 
                 if (action != 0) {
-
                     setUpAction(action, view, actions)
+                    Log.d("!!!333", view.tag.toString())
                     Toast.makeText(context, "Событие установлено", Toast.LENGTH_SHORT).show()
                 }
             }

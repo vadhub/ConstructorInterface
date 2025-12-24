@@ -28,10 +28,12 @@ class ConstructorFragment : Fragment() {
     private lateinit var creatorUI: CreatorUI
     private lateinit var uiManager: UIManager
     private lateinit var mContext: Context
+    private lateinit var navigator: Navigator
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         mContext = context
+        navigator = context as Navigator
     }
 
     override fun onCreateView(
@@ -79,6 +81,10 @@ class ConstructorFragment : Fragment() {
             }
             R.id.menu_load -> {
                 loadSavedLayout()
+                true
+            }
+            R.id.menu_run -> {
+                navigator.startFragment(RunFragment())
                 true
             }
             R.id.menu_export -> {

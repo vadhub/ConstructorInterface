@@ -12,11 +12,7 @@ import androidx.fragment.app.Fragment
 import com.vlg.constructorinterface.createui.CreatorUI
 import com.vlg.constructorinterface.createui.UIManager
 import com.vlg.constructorinterface.event.ActionExecutor
-import com.vlg.constructorinterface.event.ElementAction
 import com.vlg.constructorinterface.event.EventDelegat
-import com.vlg.constructorinterface.event.toElementActionList
-import org.json.JSONArray
-import java.io.File
 import java.util.UUID
 
 class RunFragment : Fragment() {
@@ -27,7 +23,7 @@ class RunFragment : Fragment() {
     private lateinit var executor: ActionExecutor
     private lateinit var eventDelegat: EventDelegat
     private lateinit var tableDataManager: TableDataManager
-    private lateinit var schema: TableDataManager.TableSchema
+    private var schema: TableDataManager.TableSchema? = null
     private lateinit var navigator: Navigator
 
     override fun onAttach(context: Context) {
@@ -45,7 +41,7 @@ class RunFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         tableDataManager = TableDataManager(view.context)
-        schema = tableDataManager.loadTableSchema()!!
+        schema = tableDataManager.loadTableSchema()
 
         workArea = view.findViewById(R.id.workArea)
         creatorUI = CreatorUI(view.context, layoutInflater)
@@ -78,7 +74,8 @@ class RunFragment : Fragment() {
 
         if (layout != null) {
             try {
-                uiManager.restoreLayout(layout, workArea, executor = executor)
+                Log.d("!!!", uiManager.getLayoutFileManager().loadActionsFromFile().toString())
+                uiManager.restoreLayout(layout, workArea, executor = executor, actions = uiManager.getLayoutFileManager().loadActionsFromFile())
                 Toast.makeText(view.context, "Интерфейс загружен из файла", Toast.LENGTH_SHORT)
                     .show()
             } catch (e: Exception) {
@@ -89,17 +86,6 @@ class RunFragment : Fragment() {
             }
         } else {
             creatorUI.addHintView(workArea)
-        }
-    }
-
-    fun loadActionsFromFile(file: File): List<ElementAction> {
-        return try {
-            val jsonString = file.readText()
-            val jsonArray = JSONArray(jsonString)
-            jsonArray.toElementActionList()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
         }
     }
 }

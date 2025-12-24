@@ -28,6 +28,7 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
     private val elementsMap = mutableMapOf<String, View>()
     private val actions: MutableMap<String, ElementAction> = mutableMapOf() // tag -> EventAction
 
+    fun getActions() = actions
     fun getElementCounter() = elementCounter
     fun setElementCounter(i: Int) {
         this.elementCounter = i
@@ -64,9 +65,9 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
             setOnLongClickListener { view ->
                 Log.d("DragDebug", "Long click on existing element")
                 val type = when (view) {
-                    is TextView -> if (view !is Button && view !is EditText) "TEXTVIEW" else "UNKNOWN"
                     is EditText -> "EDITTEXT"
                     is Button -> "BUTTON"
+                    is TextView -> "TEXTVIEW"
                     else -> "UNKNOWN"
                 }
 

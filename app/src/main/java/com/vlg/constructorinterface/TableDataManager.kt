@@ -220,14 +220,14 @@ class TableDataManager(private val context: Context) {
     }
 
     // Добавить новую строку
-    fun addNewRow(schema: TableSchema, newRowId: Int, values: Map<String, String>): TableSchema {
+    fun addNewRow(schema: TableSchema?, newRowId: Int, values: Map<String, String>): TableSchema {
         val newRow = TableRow(newRowId, values)
-        val updatedRows = schema.rows.toMutableList().apply {
+        val updatedRows = schema?.rows?.toMutableList()?.apply {
             add(newRow)
             sortBy { it.rowId }
         }
 
-        return schema.copy(rows = updatedRows)
+        return schema?.copy(rows = updatedRows?: emptyList())?: TableSchema(emptyList(), emptyList())
     }
 
     fun removeRow(schema: TableSchema, rowId: Int): TableSchema {

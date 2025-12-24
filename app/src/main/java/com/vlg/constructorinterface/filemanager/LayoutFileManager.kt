@@ -2,6 +2,9 @@ package com.vlg.constructorinterface.filemanager
 
 import android.content.Context
 import android.util.Log
+import com.vlg.constructorinterface.event.ElementAction
+import com.vlg.constructorinterface.event.toElementActionList
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
@@ -15,13 +18,14 @@ class LayoutFileManager(private val context: Context) {
 
     companion object {
         private const val LAYOUT_FILE_NAME = "saved_layout.json"
+        private const val ACTIONS_FILE_NAME = "saved_actions.json"
         private const val COUNTER_FILE_NAME = "element_counter.txt"
         private const val BACKUP_FOLDER = "backups"
     }
 
     fun saveLayoutToFile(json: String): Boolean {
         return try {
-            saveToFile(LAYOUT_FILE_NAME, json)
+            FileManager.saveToFile(context,LAYOUT_FILE_NAME, json)
             true
         } catch (e: Exception) {
             Log.e("LayoutFileManager", "Error saving layout to file", e)
@@ -29,9 +33,31 @@ class LayoutFileManager(private val context: Context) {
         }
     }
 
+    fun saveActionsToFile(json: String): Boolean {
+        return try {
+            FileManager.saveToFile(context,ACTIONS_FILE_NAME, json)
+            true
+        } catch (e: Exception) {
+            Log.e("LayoutFileManager", "Error saving action to file", e)
+            false
+        }
+    }
+
+    fun loadActionsFromFile(): MutableMap<String, ElementAction> {
+        return try {
+            val jsonString = FileManager.loadFromFile(context, ACTIONS_FILE_NAME)
+            val jsonArray = JSONArray(jsonString)
+            Log.d("LayoutFileManager", "loadActionsFromFile $jsonArray")
+            jsonArray.toElementActionList().associateBy { it.targetId }.toMutableMap()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyMap<String, ElementAction>() as MutableMap<String, ElementAction>
+        }
+    }
+
     fun loadLayoutFromFile(): String? {
         return try {
-            loadFromFile(LAYOUT_FILE_NAME)
+            FileManager.loadFromFile(context,LAYOUT_FILE_NAME)
         } catch (e: Exception) {
             Log.e("LayoutFileManager", "Error loading layout from file", e)
             null
@@ -40,7 +66,7 @@ class LayoutFileManager(private val context: Context) {
 
     fun saveCounterToFile(counter: Int): Boolean {
         return try {
-            saveToFile(COUNTER_FILE_NAME, counter.toString())
+            FileManager.saveToFile(context,COUNTER_FILE_NAME, counter.toString())
             true
         } catch (e: Exception) {
             Log.e("LayoutFileManager", "Error saving counter to file", e)
@@ -50,7 +76,7 @@ class LayoutFileManager(private val context: Context) {
 
     fun loadCounterFromFile(): Int {
         return try {
-            val content = loadFromFile(COUNTER_FILE_NAME)
+            val content = FileManager.loadFromFile(context,COUNTER_FILE_NAME)
             content?.toIntOrNull() ?: 1
         } catch (e: Exception) {
             Log.e("LayoutFileManager", "Error loading counter from file", e)
@@ -124,7 +150,7 @@ class LayoutFileManager(private val context: Context) {
                 JSONObject(json)
 
                 // Сохраняем как текущий файл
-                saveToFile(LAYOUT_FILE_NAME, json)
+                FileManager.saveToFile(context,LAYOUT_FILE_NAME, json)
             }
             true
         } catch (e: Exception) {
@@ -209,7 +235,7 @@ class LayoutFileManager(private val context: Context) {
         return try {
             // Проверяем валидность JSON
             JSONObject(json)
-            saveToFile(LAYOUT_FILE_NAME, json)
+            FileManager.saveToFile(context, LAYOUT_FILE_NAME, json)
             true
         } catch (e: Exception) {
             Log.e("LayoutFileManager", "Invalid JSON format", e)
@@ -228,24 +254,6 @@ class LayoutFileManager(private val context: Context) {
             }
         } catch (e: Exception) {
             "Ошибка чтения файла: ${e.message}"
-        }
-    }
-
-    private fun saveToFile(fileName: String, content: String) {
-        val file = File(context.filesDir, fileName)
-        FileOutputStream(file).use { outputStream ->
-            outputStream.write(content.toByteArray(Charset.forName("UTF-8")))
-        }
-    }
-
-    private fun loadFromFile(fileName: String): String? {
-        val file = File(context.filesDir, fileName)
-        if (!file.exists()) return null
-
-        FileInputStream(file).use { inputStream ->
-            val bytes = ByteArray(file.length().toInt())
-            inputStream.read(bytes)
-            return String(bytes, Charset.forName("UTF-8"))
         }
     }
 

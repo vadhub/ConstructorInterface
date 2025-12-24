@@ -13,6 +13,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/menu_run"
+        android:title="Запустить"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/menu_backup"
         android:title="Создать бэкап"
         app:showAsAction="never" />

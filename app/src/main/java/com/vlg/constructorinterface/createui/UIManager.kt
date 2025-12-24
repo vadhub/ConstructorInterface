@@ -15,6 +15,10 @@ import com.vlg.constructorinterface.event.ElementAction
 import com.vlg.constructorinterface.event.ElementEvent
 import com.vlg.constructorinterface.filemanager.LayoutFileManager
 import com.vlg.constructorinterface.R
+import com.vlg.constructorinterface.event.toElementActionList
+import com.vlg.constructorinterface.event.toJsonArray
+import org.json.JSONArray
+import java.io.File
 
 class UIManager(private val context: Context, private val creatorUI: CreatorUI) {
 
@@ -22,6 +26,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
     private var layoutFileManager: LayoutFileManager = LayoutFileManager(context)
     private val listOfEditTexts: MutableList<UiElement> = mutableListOf()
 
+    fun getLayoutFileManager() = layoutFileManager
     fun getListOfEditTexts() = listOfEditTexts
 
     fun createElementFromData(
@@ -53,14 +58,19 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
             }
 
             setOnClickListener {
+                Log.d("!!!122", this.tag.toString())
                 creatorUI.handleDoubleClick(this)
             }
         }
     }
 
-    fun createElementFromDataWithActions(elementData: UiElement, event: ElementEvent, executor: ActionExecutor): View {
+    fun createElementFromDataWithActions(
+        elementData: UiElement,
+        event: ElementEvent?,
+        executor: ActionExecutor
+    ): View {
         return createComponentFromData(elementData).apply {
-            setOnClickListener {
+            if (event != null) setOnClickListener {
                 executor.execute(event)
             }
         }
@@ -132,7 +142,6 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
     fun saveCurrentLayout(workArea: LinearLayout): String {
         val rows = mutableListOf<RowData>()
 
-        Log.d("SaveDebug", "=== НАЧАЛО СОХРАНЕНИЯ ===")
         Log.d("SaveDebug", "Количество строк в workArea: ${workArea.childCount}")
 
         for (i in 0 until workArea.childCount) {
@@ -149,16 +158,24 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                     val elementId = element.tag?.toString()
 
                     if (elementId == null) {
-                        Log.d("SaveDebug", "  Элемент $j: НЕТ ТЕГА! класс=${element.javaClass.simpleName}")
+                        Log.d(
+                            "SaveDebug",
+                            "  Элемент $j: НЕТ ТЕГА! класс=${element.javaClass.simpleName}"
+                        )
                         continue
                     }
 
-                    Log.d("SaveDebug","  Элемент $j: класс=${element.javaClass.simpleName}, tag=$elementId"
+                    Log.d(
+                        "SaveDebug",
+                        "  Элемент $j: класс=${element.javaClass.simpleName}, tag=$elementId"
                     )
 
                     val uiElement = when (element) {
                         is EditText -> {
-                            Log.d("SaveDebug", "    Это EditText: hint=${element.hint}, text=${element.text}")
+                            Log.d(
+                                "SaveDebug",
+                                "    Это EditText: hint=${element.hint}, text=${element.text}"
+                            )
                             UiElement(
                                 id = elementId,
                                 type = "EDITTEXT",
@@ -221,6 +238,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                     }
 
                     uiElement?.let {
+                        Log.d("!!!122 save", it.id)
                         elements.add(it)
                         Log.d("SaveDebug", "    Добавлен элемент типа ${it.type}")
                     }
@@ -240,7 +258,10 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
         )
 
         val json = LayoutSerializer.saveLayout(layout)
-        Log.d("SaveDebug", "Всего строк: ${rows.size}, элементов: ${rows.sumOf { it.elements.size }}")
+        Log.d(
+            "SaveDebug",
+            "Всего строк: ${rows.size}, элементов: ${rows.sumOf { it.elements.size }}"
+        )
         Log.d("SaveDebug", "JSON: $json")
 
         return json
@@ -248,9 +269,11 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
 
     fun saveLayoutToFile(workArea: LinearLayout, elementCounter: Int): Boolean {
         val json = saveCurrentLayout(workArea)
+        val jsonActions = creatorUI.getActions().map { it.value }.toJsonArray()
         val success1 = layoutFileManager.saveLayoutToFile(json)
         val success2 = layoutFileManager.saveCounterToFile(elementCounter)
-        return success1 && success2
+        val success3 = layoutFileManager.saveActionsToFile(jsonActions.toString())
+        return success1 && success2 && success3
     }
 
     fun loadLayoutFromFile(): Pair<UiLayout?, Int> {
@@ -301,8 +324,13 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
             for (elementData in rowData.elements) {
                 val element = if (executor == null)
                     createElementFromData(elementData, trashArea, placementHint)
-                else
-                    createElementFromDataWithActions(elementData, actions!![elementData.id]!!.event, executor)
+                else {
+                    createElementFromDataWithActions(
+                        elementData,
+                        actions?.get(elementData.id)?.event,
+                        executor
+                    )
+                }
 
                 val params = if (elementData.position.weight > 0) {
                     LinearLayout.LayoutParams(
