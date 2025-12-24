@@ -14,12 +14,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.doOnTextChanged
-import com.vlg.constructorinterface.ActionWrite
-import com.vlg.constructorinterface.ElementAction
-import com.vlg.constructorinterface.ElementEvent
+import com.vlg.constructorinterface.event.ElementAction
+import com.vlg.constructorinterface.event.ElementEvent
 import com.vlg.constructorinterface.R
 
-class SettingComponentDialog(private val context: Context, private val actionWrite: ActionWrite) {
+class SettingComponentDialog(private val context: Context) {
 
     private lateinit var eventTypeSpinner: Spinner
     private lateinit var textEditText: EditText
@@ -39,7 +38,7 @@ class SettingComponentDialog(private val context: Context, private val actionWri
     fun showDialog(
         layoutInflater: LayoutInflater,
         view: View,
-        actions: MutableList<ElementAction>
+        actions: MutableMap<String, ElementAction>
     ) {
         val currentText = when (view) {
             is TextView -> view.text.toString()
@@ -160,14 +159,15 @@ class SettingComponentDialog(private val context: Context, private val actionWri
         }
     }
 
-    private fun setUpAction(type: Int, view: View, actions: MutableList<ElementAction>) {
+    private fun setUpAction(type: Int, view: View, actions: MutableMap<String, ElementAction>) {
         when (type) {
             0 -> {
 
             }
 
             1 -> {
-                actions.add(
+                actions.put(
+                    view.tag.toString(),
                     ElementAction(
                         ElementEvent.ShowToast(textToastEditText.text.toString()),
                         view.tag.toString(),
@@ -177,7 +177,8 @@ class SettingComponentDialog(private val context: Context, private val actionWri
             }
 
             2 -> {
-                actions.add(
+                actions.put(
+                    view.tag.toString(),
                     ElementAction(
                         ElementEvent.ShowDialog(
                             dialogTitleLabel.text.toString(),
@@ -186,7 +187,10 @@ class SettingComponentDialog(private val context: Context, private val actionWri
                     )
                 )
             }
-            3 -> actionWrite.onWrite()
+            3 -> actions.put(
+                view.tag.toString(),
+                ElementAction(ElementEvent.CreateEntry(""))
+                )
         }
     }
 

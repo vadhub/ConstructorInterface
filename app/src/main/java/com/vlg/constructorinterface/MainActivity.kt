@@ -9,12 +9,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.fragment.app.Fragment
 import com.vlg.constructorinterface.createui.CreatorUI
 import com.vlg.constructorinterface.createui.DragManager
 import com.vlg.constructorinterface.createui.SettingComponentDialog
 import com.vlg.constructorinterface.createui.UIManager
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), Navigator {
 
     private lateinit var workArea: LinearLayout
     private lateinit var placementHint: TextView
@@ -268,6 +269,10 @@ class MainActivity : AppCompatActivity() {
             .setMessage(content)
             .setPositiveButton("OK", null)
             .show()
+    }
+
+    override fun startFragment(fragment: Fragment) {
+        // support
     }
 
 }

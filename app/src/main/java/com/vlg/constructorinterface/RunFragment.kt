@@ -1,5 +1,6 @@
 package com.vlg.constructorinterface
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,8 +11,13 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.vlg.constructorinterface.createui.CreatorUI
 import com.vlg.constructorinterface.createui.UIManager
+import com.vlg.constructorinterface.event.ActionExecutor
+import com.vlg.constructorinterface.event.ElementAction
+import com.vlg.constructorinterface.event.EventDelegat
+import com.vlg.constructorinterface.event.toElementActionList
 import org.json.JSONArray
 import java.io.File
+import java.util.UUID
 
 class RunFragment : Fragment() {
 
@@ -19,7 +25,15 @@ class RunFragment : Fragment() {
     private lateinit var creatorUI: CreatorUI
     private lateinit var uiManager: UIManager
     private lateinit var executor: ActionExecutor
+    private lateinit var eventDelegat: EventDelegat
     private lateinit var tableDataManager: TableDataManager
+    private lateinit var schema: TableDataManager.TableSchema
+    private lateinit var navigator: Navigator
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        navigator = context as Navigator
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,13 +44,31 @@ class RunFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        tableDataManager = TableDataManager(view.context)
+        schema = tableDataManager.loadTableSchema()!!
+
         workArea = view.findViewById(R.id.workArea)
         creatorUI = CreatorUI(view.context, layoutInflater)
         uiManager = UIManager(view.context, creatorUI)
-        tableDataManager = TableDataManager(view.context)
-        executor = ActionExecutor(view.context, tableDataManager)
-//        executor.execute()
-//
+        eventDelegat = EventDelegat(view.context)
+        executor = ActionExecutor(eventDelegat)
+
+        eventDelegat.setOnCreateEntry {
+            val values = mutableMapOf<String, String>()
+            uiManager.getListOfEditTexts().forEach { values.put(it.hint, it.text) }
+            tableDataManager.addNewRow(schema, UUID.randomUUID().timestamp().toInt(), values)
+        }
+
+        eventDelegat.setOnDeleteEntry { }
+
+        eventDelegat.setOnOpenTable {
+            val fragment = TableDataFragment()
+            val bundle = Bundle()
+            bundle.putString("TABLE_NAME", it.tableName)
+            fragment.arguments = bundle
+            navigator.startFragment(fragment)
+        }
+
         loadSavedLayout(view)
     }
 
@@ -46,11 +78,13 @@ class RunFragment : Fragment() {
 
         if (layout != null) {
             try {
-                uiManager.restoreLayout(layout, workArea)
-                Toast.makeText(view.context, "Интерфейс загружен из файла", Toast.LENGTH_SHORT).show()
+                uiManager.restoreLayout(layout, workArea, executor = executor)
+                Toast.makeText(view.context, "Интерфейс загружен из файла", Toast.LENGTH_SHORT)
+                    .show()
             } catch (e: Exception) {
                 Log.e("LayoutLoad", "Error restoring layout", e)
-                Toast.makeText(view.context, "Ошибка загрузки интерфейса", Toast.LENGTH_SHORT).show()
+                Toast.makeText(view.context, "Ошибка загрузки интерфейса", Toast.LENGTH_SHORT)
+                    .show()
                 creatorUI.addHintView(workArea)
             }
         } else {

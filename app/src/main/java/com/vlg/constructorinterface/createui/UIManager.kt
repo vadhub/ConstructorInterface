@@ -10,6 +10,9 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.isEmpty
+import com.vlg.constructorinterface.event.ActionExecutor
+import com.vlg.constructorinterface.event.ElementAction
+import com.vlg.constructorinterface.event.ElementEvent
 import com.vlg.constructorinterface.filemanager.LayoutFileManager
 import com.vlg.constructorinterface.R
 
@@ -17,50 +20,16 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
 
     private val elementsMap = mutableMapOf<String, View>()
     private var layoutFileManager: LayoutFileManager = LayoutFileManager(context)
+    private val listOfEditTexts: MutableList<UiElement> = mutableListOf()
 
-    fun createElementFromData(elementData: UiElement, trashArea: LinearLayout? = null, placementHint: TextView? = null): View {
-        return when (elementData.type) {
-            "TEXTVIEW" -> {
-                TextView(context).apply {
-                    text = elementData.text ?: "Текст"
-                    textSize = 18f
-                    setPadding(creatorUI.dpToPx(16), creatorUI.dpToPx(8), creatorUI.dpToPx(16), creatorUI.dpToPx(8))
-                    setBackgroundResource(R.drawable.element_background)
-                    tag = elementData.id
-                    gravity = Gravity.CENTER
-                    isClickable = true
-                    elementsMap[elementData.id] = this
-                }
-            }
-            "EDITTEXT" -> {
-                EditText(context).apply {
-                    hint = elementData.hint ?: "Введите текст"
-                    textSize = 16f
-                    setPadding(creatorUI.dpToPx(16), creatorUI.dpToPx(8), creatorUI.dpToPx(16), creatorUI.dpToPx(8))
-                    setBackgroundResource(R.drawable.element_background)
-                    tag = elementData.id
-                    gravity = Gravity.CENTER_VERTICAL
-                    isClickable = true
-                    elementsMap[elementData.id] = this
+    fun getListOfEditTexts() = listOfEditTexts
 
-                    elementData.text?.let {
-                        setText(it)
-                    }
-                }
-            }
-            "BUTTON" -> {
-                Button(context).apply {
-                    text = elementData.text ?: "Кнопка"
-                    textSize = 16f
-                    setPadding(creatorUI.dpToPx(16), creatorUI.dpToPx(8), creatorUI.dpToPx(16), creatorUI.dpToPx(8))
-                    setBackgroundResource(R.drawable.button_background)
-                    tag = elementData.id
-                    isClickable = true
-                    elementsMap[elementData.id] = this
-                }
-            }
-            else -> creatorUI.createTextView()
-        }.apply {
+    fun createElementFromData(
+        elementData: UiElement,
+        trashArea: LinearLayout? = null,
+        placementHint: TextView? = null
+    ): View {
+        return createComponentFromData(elementData).apply {
             setOnLongClickListener { view ->
                 val type = when (view) {
                     is TextView -> if (view !is Button && view !is EditText) "TEXTVIEW" else "UNKNOWN"
@@ -89,6 +58,77 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
         }
     }
 
+    fun createElementFromDataWithActions(elementData: UiElement, event: ElementEvent, executor: ActionExecutor): View {
+        return createComponentFromData(elementData).apply {
+            setOnClickListener {
+                executor.execute(event)
+            }
+        }
+    }
+
+    private fun createComponentFromData(elementData: UiElement) =
+        when (elementData.type) {
+            "TEXTVIEW" -> {
+                TextView(context).apply {
+                    text = elementData.text ?: "Текст"
+                    textSize = 18f
+                    setPadding(
+                        creatorUI.dpToPx(16),
+                        creatorUI.dpToPx(8),
+                        creatorUI.dpToPx(16),
+                        creatorUI.dpToPx(8)
+                    )
+                    setBackgroundResource(R.drawable.element_background)
+                    tag = elementData.id
+                    gravity = Gravity.CENTER
+                    isClickable = true
+                    elementsMap[elementData.id] = this
+                }
+            }
+
+            "EDITTEXT" -> {
+                listOfEditTexts.add(elementData)
+                EditText(context).apply {
+                    hint = elementData.hint ?: "Введите текст"
+                    textSize = 16f
+                    setPadding(
+                        creatorUI.dpToPx(16),
+                        creatorUI.dpToPx(8),
+                        creatorUI.dpToPx(16),
+                        creatorUI.dpToPx(8)
+                    )
+                    setBackgroundResource(R.drawable.element_background)
+                    tag = elementData.id
+                    gravity = Gravity.CENTER_VERTICAL
+                    isClickable = true
+                    elementsMap[elementData.id] = this
+
+                    elementData.text?.let {
+                        setText(it)
+                    }
+                }
+            }
+
+            "BUTTON" -> {
+                Button(context).apply {
+                    text = elementData.text ?: "Кнопка"
+                    textSize = 16f
+                    setPadding(
+                        creatorUI.dpToPx(16),
+                        creatorUI.dpToPx(8),
+                        creatorUI.dpToPx(16),
+                        creatorUI.dpToPx(8)
+                    )
+                    setBackgroundResource(R.drawable.button_background)
+                    tag = elementData.id
+                    isClickable = true
+                    elementsMap[elementData.id] = this
+                }
+            }
+
+            else -> creatorUI.createTextView()
+        }
+
     fun saveCurrentLayout(workArea: LinearLayout): String {
         val rows = mutableListOf<RowData>()
 
@@ -113,7 +153,8 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                         continue
                     }
 
-                    Log.d("SaveDebug", "  Элемент $j: класс=${element.javaClass.simpleName}, tag=$elementId")
+                    Log.d("SaveDebug","  Элемент $j: класс=${element.javaClass.simpleName}, tag=$elementId"
+                    )
 
                     val uiElement = when (element) {
                         is EditText -> {
@@ -135,6 +176,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                                 )
                             )
                         }
+
                         is Button -> {
                             Log.d("SaveDebug", "    Это Button: text=${element.text}")
                             UiElement(
@@ -153,6 +195,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                                 )
                             )
                         }
+
                         is TextView -> {
                             run {
                                 Log.d("SaveDebug", "    Это TextView: text=${element.text}")
@@ -173,6 +216,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                                 )
                             }
                         }
+
                         else -> null
                     }
 
@@ -196,7 +240,6 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
         )
 
         val json = LayoutSerializer.saveLayout(layout)
-        Log.d("SaveDebug", "=== КОНЕЦ СОХРАНЕНИЯ ===")
         Log.d("SaveDebug", "Всего строк: ${rows.size}, элементов: ${rows.sumOf { it.elements.size }}")
         Log.d("SaveDebug", "JSON: $json")
 
@@ -227,7 +270,14 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
         }
     }
 
-    fun restoreLayout(layout: UiLayout, workArea: LinearLayout, placementHint: TextView? = null, trashArea: LinearLayout? = null) {
+    fun restoreLayout(
+        layout: UiLayout,
+        workArea: LinearLayout,
+        placementHint: TextView? = null,
+        trashArea: LinearLayout? = null,
+        executor: ActionExecutor? = null,
+        actions: MutableMap<String, ElementAction>? = null
+    ) {
         workArea.removeAllViews()
         elementsMap.clear()
 
@@ -240,11 +290,19 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                     setMargins(0, creatorUI.dpToPx(4), 0, creatorUI.dpToPx(4))
                 }
                 orientation = LinearLayout.HORIZONTAL
-                setPadding(creatorUI.dpToPx(8), creatorUI.dpToPx(8), creatorUI.dpToPx(8), creatorUI.dpToPx(8))
+                setPadding(
+                    creatorUI.dpToPx(8),
+                    creatorUI.dpToPx(8),
+                    creatorUI.dpToPx(8),
+                    creatorUI.dpToPx(8)
+                )
             }
 
             for (elementData in rowData.elements) {
-                val element = createElementFromData(elementData, trashArea, placementHint)
+                val element = if (executor == null)
+                    createElementFromData(elementData, trashArea, placementHint)
+                else
+                    createElementFromDataWithActions(elementData, actions!![elementData.id]!!.event, executor)
 
                 val params = if (elementData.position.weight > 0) {
                     LinearLayout.LayoutParams(

@@ -1,15 +1,14 @@
-package com.vlg.constructorinterface
+package com.vlg.constructorinterface.event
 
-import com.google.gson.Gson
-import com.vlg.constructorinterface.TableDataManager.TableSchema
 import org.json.JSONArray
 import org.json.JSONObject
 
 sealed class ElementEvent {
     data class ShowToast(val message: String) : ElementEvent()
     data class ShowDialog(val title: String, val message: String) : ElementEvent()
-    data class CreateEntry(val schema: TableSchema, val newRowId: Int, val values: Map<String, String>) : ElementEvent()
-    data class DeleteEntry(val schema: TableSchema, val rowId: Int) : ElementEvent()
+    data class CreateEntry(val tableName: String) : ElementEvent()
+    data class DeleteEntry(val tableName: String) : ElementEvent()
+    data class OpenTable(val tableName: String): ElementEvent()
     data class GetTextFromEditText(val editTextId: Int) : ElementEvent()
     data class ChangeText(val newText: String) : ElementEvent()
     data class RunCustomCode(val code: String) : ElementEvent()
@@ -51,14 +50,11 @@ fun ElementEvent.toJson(): JSONObject {
             }
             is ElementEvent.CreateEntry -> {
                 put("type", "CreateEntry")
-                put("schema", Gson().toJson(schema))
-                put("newRowId", newRowId)
-                put("values", JSONObject(values))
+                put("tableName", tableName)
             }
             is ElementEvent.DeleteEntry -> {
                 put("type", "DeleteEntry")
-                put("schema", Gson().toJson(schema))
-                put("rowId", rowId)
+                put("tableName", tableName)
             }
             is ElementEvent.GetTextFromEditText -> {
                 put("type", "GetTextFromEditText")
@@ -71,6 +67,10 @@ fun ElementEvent.toJson(): JSONObject {
             is ElementEvent.RunCustomCode -> {
                 put("type", "RunCustomCode")
                 put("code", code)
+            }
+            is ElementEvent.OpenTable -> {
+                put("type", "")
+                put("name", tableName)
             }
         }
     }
@@ -105,25 +105,12 @@ fun JSONObject.toElementEvent(): ElementEvent {
             ElementEvent.ShowDialog(title, message)
         }
         "CreateEntry" -> {
-            val schemaJson = this.getString("schema")
-            val schema = Gson().fromJson(schemaJson, TableSchema::class.java)
-            val newRowId = this.getInt("newRowId")
-
-            val valuesJson = this.getJSONObject("values")
-            val values = mutableMapOf<String, String>()
-            val keys = valuesJson.keys()
-            while (keys.hasNext()) {
-                val key = keys.next()
-                values[key] = valuesJson.getString(key)
-            }
-
-            ElementEvent.CreateEntry(schema, newRowId, values)
+            val name = this.getString("name")
+            ElementEvent.CreateEntry(name)
         }
         "DeleteEntry" -> {
-            val schemaJson = this.getString("schema")
-            val schema = Gson().fromJson(schemaJson, TableSchema::class.java)
-            val rowId = this.getInt("rowId")
-            ElementEvent.DeleteEntry(schema, rowId)
+            val name = this.getString("name")
+            ElementEvent.DeleteEntry(name)
         }
         "GetTextFromEditText" -> {
             val editTextId = this.getInt("editTextId")
@@ -136,6 +123,10 @@ fun JSONObject.toElementEvent(): ElementEvent {
         "RunCustomCode" -> {
             val code = this.getString("code")
             ElementEvent.RunCustomCode(code)
+        }
+        "OpenTable" -> {
+            val name = this.getString("name")
+            ElementEvent.OpenTable(name)
         }
         else -> throw IllegalArgumentException("Unknown event type: $type")
     }

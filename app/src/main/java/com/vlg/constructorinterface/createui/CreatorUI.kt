@@ -15,7 +15,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.graphics.toColorInt
 import androidx.core.view.isEmpty
-import com.vlg.constructorinterface.ElementAction
+import com.vlg.constructorinterface.event.ElementAction
 import com.vlg.constructorinterface.R
 import java.util.UUID
 
@@ -26,7 +26,7 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
     private var elementCounter = 1
     private var currentHighlightedRow: LinearLayout? = null
     private val elementsMap = mutableMapOf<String, View>()
-    private val actions: MutableList<ElementAction> = mutableListOf()
+    private val actions: MutableMap<String, ElementAction> = mutableMapOf() // tag -> EventAction
 
     fun getElementCounter() = elementCounter
     fun setElementCounter(i: Int) {

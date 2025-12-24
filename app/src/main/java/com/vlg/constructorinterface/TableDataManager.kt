@@ -15,6 +15,8 @@ class TableDataManager(private val context: Context) {
         private const val TABLE_DATA_FILE = "table_data.json"
     }
 
+    fun getListNamesTables() = TABLE_DATA_FILE // future: list from file
+
     private val gson = Gson()
 
     // Структура таблицы
@@ -68,7 +70,7 @@ class TableDataManager(private val context: Context) {
                         element is EditText -> {
                             val hint = element.hint?.toString() ?: "Поле ${colIndex + 1}"
                             val value = element.text?.toString() ?: ""
-                            val columnId = generateColumnId(hint)
+                            val columnId = element.hint.toString()
 
                             // Если столбец еще не зарегистрирован
                             if (!columnMap.containsKey(columnId)) {
