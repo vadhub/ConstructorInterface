@@ -33,6 +33,9 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
     fun setElementCounter(i: Int) {
         this.elementCounter = i
     }
+    fun clearElementsMap() {
+        elementsMap.clear()
+    }
 
     fun handleExistingElementMove(workArea: LinearLayout, element: View, x: Float, y: Float) {
         Log.d("DragDebug", "handleExistingElementMove")
@@ -226,46 +229,48 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
         }
     }
 
-    fun createTextView(): TextView {
+    fun createTextView(element: UiElement? = null): TextView {
         val textView = TextView(context).apply {
-            text = "Текст $elementCounter"
+            text = element?.text ?: "Текст $elementCounter"
             textSize = 18f
             setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
             setBackgroundResource(R.drawable.element_background)
-            tag = UUID.randomUUID().toString() // Используем UUID вместо числа
+            tag = element?.id ?: UUID.randomUUID().toString() // Используем UUID вместо числа
             gravity = Gravity.CENTER
             isClickable = true
         }
-        elementsMap[textView.tag.toString()] = textView // Сохраняем в мапу
+        elementsMap[element?.id ?: textView.tag.toString()] = textView // Сохраняем в мапу
         elementCounter++
         return textView
     }
 
-    fun createEditText(): EditText {
+    fun createEditText(element: UiElement? = null): EditText {
         val editText = EditText(context).apply {
-            hint = "Введите текст $elementCounter"
+            hint = element?.hint ?: "Введите текст $elementCounter"
             textSize = 16f
             setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
             setBackgroundResource(R.drawable.element_background)
-            tag = UUID.randomUUID().toString() // Используем UUID вместо числа
+            tag = element?.id ?: UUID.randomUUID().toString() // Используем UUID вместо числа
             gravity = Gravity.CENTER_VERTICAL
             isClickable = true
         }
-        elementsMap[editText.tag.toString()] = editText // Сохраняем в мапу
+
+        editText.setText(element?.text ?: "")
+        elementsMap[element?.id ?:editText.tag.toString()] = editText // Сохраняем в мапу
         elementCounter++
         return editText
     }
 
-    fun createButton(): Button {
+    fun createButton(element: UiElement? = null): Button {
         val button = Button(context).apply {
-            text = "Кнопка $elementCounter"
+            text = element?.text ?: "Кнопка $elementCounter"
             textSize = 16f
             setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
             setBackgroundResource(R.drawable.button_background)
-            tag = UUID.randomUUID().toString()
+            tag = element?.id ?: UUID.randomUUID().toString()
             isClickable = true
         }
-        elementsMap[button.tag.toString()] = button
+        elementsMap[element?.id ?:button.tag.toString()] = button
         elementCounter++
         return button
     }

@@ -22,7 +22,6 @@ import java.io.File
 
 class UIManager(private val context: Context, private val creatorUI: CreatorUI) {
 
-    private val elementsMap = mutableMapOf<String, View>()
     private var layoutFileManager: LayoutFileManager = LayoutFileManager(context)
     private val listOfEditTexts: MutableList<EditText> = mutableListOf()
 
@@ -84,65 +83,20 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
     private fun createComponentFromData(elementData: UiElement) =
         when (elementData.type) {
             "TEXTVIEW" -> {
-                TextView(context).apply {
-                    text = elementData.text ?: "Текст"
-                    textSize = 18f
-                    setPadding(
-                        creatorUI.dpToPx(16),
-                        creatorUI.dpToPx(8),
-                        creatorUI.dpToPx(16),
-                        creatorUI.dpToPx(8)
-                    )
-                    setBackgroundResource(R.drawable.element_background)
-                    tag = elementData.id
-                    gravity = Gravity.CENTER
-                    isClickable = true
-                    elementsMap[elementData.id] = this
-                }
+                creatorUI.createTextView(elementData)
             }
 
             "EDITTEXT" -> {
-                val editText  = EditText(context).apply {
-                    hint = elementData.hint ?: "Введите текст"
-                    textSize = 16f
-                    setPadding(
-                        creatorUI.dpToPx(16),
-                        creatorUI.dpToPx(8),
-                        creatorUI.dpToPx(16),
-                        creatorUI.dpToPx(8)
-                    )
-                    setBackgroundResource(R.drawable.element_background)
-                    tag = elementData.id
-                    gravity = Gravity.CENTER_VERTICAL
-                    isClickable = true
-                    elementsMap[elementData.id] = this
-
-                    elementData.text?.let {
-                        setText(it)
-                    }
-                }
+                val editText = creatorUI.createEditText(elementData)
                 listOfEditTexts.add(editText)
                 editText
             }
 
             "BUTTON" -> {
-                Button(context).apply {
-                    text = elementData.text ?: "Кнопка"
-                    textSize = 16f
-                    setPadding(
-                        creatorUI.dpToPx(16),
-                        creatorUI.dpToPx(8),
-                        creatorUI.dpToPx(16),
-                        creatorUI.dpToPx(8)
-                    )
-                    setBackgroundResource(R.drawable.button_background)
-                    tag = elementData.id
-                    isClickable = true
-                    elementsMap[elementData.id] = this
-                }
+                creatorUI.createButton(elementData)
             }
 
-            else -> creatorUI.createTextView()
+            else -> creatorUI.createTextView(elementData)
         }
 
     fun saveCurrentLayout(workArea: LinearLayout): String {
@@ -308,7 +262,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
         actions: MutableMap<String, ElementAction>? = null
     ) {
         workArea.removeAllViews()
-        elementsMap.clear()
+        creatorUI.clearElementsMap()
 
         for (rowData in layout.rows) {
             val newRow = LinearLayout(context).apply {
@@ -375,7 +329,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
     }
 
     fun deleteLayoutFiles(): Boolean {
-        elementsMap.clear()
+        creatorUI.clearElementsMap()
         return layoutFileManager.deleteLayoutFile()
     }
 
