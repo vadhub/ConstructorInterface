@@ -3,22 +3,18 @@ package com.vlg.constructorinterface.createui
 import android.content.ClipData
 import android.content.Context
 import android.util.Log
-import android.view.Gravity
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.Spinner
 import android.widget.TextView
 import androidx.core.view.isEmpty
 import com.vlg.constructorinterface.event.ActionExecutor
 import com.vlg.constructorinterface.event.ElementAction
 import com.vlg.constructorinterface.event.ElementEvent
 import com.vlg.constructorinterface.filemanager.LayoutFileManager
-import com.vlg.constructorinterface.R
-import com.vlg.constructorinterface.event.toElementActionList
 import com.vlg.constructorinterface.event.toJsonArray
-import org.json.JSONArray
-import java.io.File
 
 class UIManager(private val context: Context, private val creatorUI: CreatorUI) {
 
@@ -36,15 +32,16 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
         return createComponentFromData(elementData).apply {
             setOnLongClickListener { view ->
                 val type = when (view) {
-                    is TextView -> if (view !is Button && view !is EditText) "TEXTVIEW" else "UNKNOWN"
-                    is EditText -> "EDITTEXT"
-                    is Button -> "BUTTON"
+                    is TextView -> if (view !is Button && view !is EditText) Type.TEXTVIEW else "UNKNOWN"
+                    is EditText -> Type.EDITTEXT
+                    is Button -> Type.BUTTON
+                    is Spinner -> Type.SPINNER
                     else -> "UNKNOWN"
                 }
 
-                val item = ClipData.Item(type)
+                val item = ClipData.Item(type.toString())
                 val mimeTypes = arrayOf("text/plain")
-                val data = ClipData(type, mimeTypes, item)
+                val data = ClipData(type.toString(), mimeTypes, item)
 
                 val shadowBuilder = View.DragShadowBuilder(view)
                 view.startDragAndDrop(data, shadowBuilder, view, 0)
@@ -82,19 +79,21 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
 
     private fun createComponentFromData(elementData: UiElement) =
         when (elementData.type) {
-            "TEXTVIEW" -> {
+            Type.TEXTVIEW -> {
                 creatorUI.createTextView(elementData)
             }
 
-            "EDITTEXT" -> {
+            Type.EDITTEXT -> {
                 val editText = creatorUI.createEditText(elementData)
                 listOfEditTexts.add(editText)
                 editText
             }
 
-            "BUTTON" -> {
+            Type.BUTTON -> {
                 creatorUI.createButton(elementData)
             }
+
+            Type.SPINNER -> creatorUI.createSpinner(elementData)
 
             else -> creatorUI.createTextView(elementData)
         }
@@ -118,17 +117,12 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                     val elementId = element.tag?.toString()
 
                     if (elementId == null) {
-                        Log.d(
-                            "SaveDebug",
-                            "  Элемент $j: НЕТ ТЕГА! класс=${element.javaClass.simpleName}"
-                        )
+                        Log.d("SaveDebug",
+                            "  Элемент $j: НЕТ ТЕГА! класс=${element.javaClass.simpleName}")
                         continue
                     }
 
-                    Log.d(
-                        "SaveDebug",
-                        "  Элемент $j: класс=${element.javaClass.simpleName}, tag=$elementId"
-                    )
+                    Log.d("SaveDebug", "  Элемент $j: класс=${element.javaClass.simpleName}, tag=$elementId")
 
                     val uiElement = when (element) {
                         is EditText -> {
@@ -138,7 +132,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                             )
                             UiElement(
                                 id = elementId,
-                                type = "EDITTEXT",
+                                type = Type.EDITTEXT,
                                 hint = element.hint?.toString() ?: "",
                                 text = element.text?.toString() ?: "",
                                 position = Position(
@@ -158,7 +152,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                             Log.d("SaveDebug", "    Это Button: text=${element.text}")
                             UiElement(
                                 id = elementId,
-                                type = "BUTTON",
+                                type = Type.BUTTON,
                                 text = element.text.toString(),
                                 position = Position(
                                     row = i,
@@ -174,24 +168,41 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                         }
 
                         is TextView -> {
-                            run {
-                                Log.d("SaveDebug", "    Это TextView: text=${element.text}")
-                                UiElement(
-                                    id = elementId,
-                                    type = "TEXTVIEW",
-                                    text = element.text.toString(),
-                                    position = Position(
-                                        row = i,
-                                        column = j,
-                                        weight = getElementWeight(element),
-                                        rowIndex = i
-                                    ),
-                                    size = Size(
-                                        width = creatorUI.dpToPx(200),
-                                        height = creatorUI.dpToPx(100)
-                                    )
+                            Log.d("SaveDebug", "    Это TextView: text=${element.text}")
+                            UiElement(
+                                id = elementId,
+                                type = Type.TEXTVIEW,
+                                text = element.text.toString(),
+                                position = Position(
+                                    row = i,
+                                    column = j,
+                                    weight = getElementWeight(element),
+                                    rowIndex = i
+                                ),
+                                size = Size(
+                                    width = creatorUI.dpToPx(200),
+                                    height = creatorUI.dpToPx(100)
                                 )
-                            }
+                            )
+                        }
+
+                        is Spinner -> {
+                            Log.d("SaveDebug", "    Это Spinner: text=${element.adapter.getItemId(0)}")
+                            UiElement(
+                                id = elementId,
+                                type = Type.SPINNER,
+                                text = element.adapter.toString(),
+                                position = Position(
+                                    row = i,
+                                    column = j,
+                                    weight = getElementWeight(element),
+                                    rowIndex = i
+                                ),
+                                size = Size(
+                                    width = creatorUI.dpToPx(200),
+                                    height = creatorUI.dpToPx(100)
+                                )
+                            )
                         }
 
                         else -> null
@@ -218,10 +229,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
         )
 
         val json = LayoutSerializer.saveLayout(layout)
-        Log.d(
-            "SaveDebug",
-            "Всего строк: ${rows.size}, элементов: ${rows.sumOf { it.elements.size }}"
-        )
+        Log.d("SaveDebug", "Всего строк: ${rows.size}, элементов: ${rows.sumOf { it.elements.size }}")
         Log.d("SaveDebug", "JSON: $json")
 
         return json

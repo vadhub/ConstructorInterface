@@ -4,12 +4,19 @@ import com.google.gson.Gson
 
 data class UiElement(
     val id: String,
-    val type: String,
+    val type: Type,
     val text: String = "",
     val hint: String = "",
     val position: Position,
     val size: Size
 )
+
+enum class Type(val type: String) {
+    TEXTVIEW("TEXTVIEW"),
+    EDITTEXT("EDITTEXT"),
+    BUTTON("BUTTON"),
+    SPINNER("SPINNER")
+}
 
 data class Position(
     val row: Int,

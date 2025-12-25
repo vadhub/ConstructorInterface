@@ -72,6 +72,7 @@ class SettingComponentDialog(private val context: Context, private val tableData
                         is EditText -> view.hint = newText
                         is TextView -> view.text = newText
                         is Button -> view.text = newText
+                        is Spinner -> view.adapter = CreatorUI.createAdapterSpinner(context, newText)
                     }
                     Toast.makeText(context, "Текст изменен", Toast.LENGTH_SHORT).show()
                 }

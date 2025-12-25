@@ -8,9 +8,11 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.graphics.toColorInt
@@ -27,6 +29,19 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
     private var currentHighlightedRow: LinearLayout? = null
     private val elementsMap = mutableMapOf<String, View>()
     private val actions: MutableMap<String, ElementAction> = mutableMapOf() // tag -> EventAction
+
+    companion object {
+        fun createAdapterSpinner(context: Context, text: String): ArrayAdapter<String> {
+            val listOf = text.split(",")
+            val adapterList = ArrayAdapter(
+                context,
+                android.R.layout.simple_spinner_item,
+                listOf.toList()
+            )
+            adapterList.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            return adapterList
+        }
+    }
 
     fun getActions() = actions
     fun getElementCounter() = elementCounter
@@ -273,6 +288,21 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
         elementsMap[element?.id ?:button.tag.toString()] = button
         elementCounter++
         return button
+    }
+
+    fun createSpinner(element: UiElement? = null): Spinner {
+
+        val adapterList = createAdapterSpinner(context, element?.text ?: "")
+
+        val spinner: Spinner = Spinner(context).apply {
+            setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
+            tag = element?.id ?: UUID.randomUUID().toString()
+            adapter = adapterList
+        }
+
+        elementsMap[element?.id ?:spinner.tag.toString()] = spinner
+        elementCounter++
+        return spinner
     }
 
     fun addElementToWorkArea(workArea: LinearLayout, element: View, x: Float, y: Float) {
