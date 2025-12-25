@@ -24,7 +24,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
 
     private val elementsMap = mutableMapOf<String, View>()
     private var layoutFileManager: LayoutFileManager = LayoutFileManager(context)
-    private val listOfEditTexts: MutableList<UiElement> = mutableListOf()
+    private val listOfEditTexts: MutableList<EditText> = mutableListOf()
 
     fun getLayoutFileManager() = layoutFileManager
     fun getListOfEditTexts() = listOfEditTexts
@@ -70,8 +70,13 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
         executor: ActionExecutor
     ): View {
         return createComponentFromData(elementData).apply {
-            if (event != null) setOnClickListener {
-                executor.execute(event)
+            setOnClickListener {
+                if (event != null) {
+                    Log.d("!!! ui manager", event.toString())
+                    executor.execute(event)
+                } else {
+                    Log.d("!!! ui manager", "event NULL")
+                }
             }
         }
     }
@@ -97,8 +102,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
             }
 
             "EDITTEXT" -> {
-                listOfEditTexts.add(elementData)
-                EditText(context).apply {
+                val editText  = EditText(context).apply {
                     hint = elementData.hint ?: "Введите текст"
                     textSize = 16f
                     setPadding(
@@ -117,6 +121,8 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                         setText(it)
                     }
                 }
+                listOfEditTexts.add(editText)
+                editText
             }
 
             "BUTTON" -> {
@@ -325,6 +331,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                 val element = if (executor == null)
                     createElementFromData(elementData, trashArea, placementHint)
                 else {
+                    Log.d("!!! restore ui manager", actions.toString())
                     createElementFromDataWithActions(
                         elementData,
                         actions?.get(elementData.id)?.event,

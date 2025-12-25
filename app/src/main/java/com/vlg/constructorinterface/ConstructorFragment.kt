@@ -20,6 +20,7 @@ import com.vlg.constructorinterface.createui.CreatorUI
 import com.vlg.constructorinterface.createui.DragManager
 import com.vlg.constructorinterface.createui.SettingComponentDialog
 import com.vlg.constructorinterface.createui.UIManager
+import com.vlg.constructorinterface.table.TableDataManager
 
 class ConstructorFragment : Fragment() {
     private lateinit var workArea: LinearLayout
@@ -29,6 +30,7 @@ class ConstructorFragment : Fragment() {
     private lateinit var uiManager: UIManager
     private lateinit var mContext: Context
     private lateinit var navigator: Navigator
+    private lateinit var tableDataManager: TableDataManager
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -50,12 +52,13 @@ class ConstructorFragment : Fragment() {
         workArea = view.findViewById(R.id.workArea)
         placementHint = view.findViewById(R.id.placementHint)
         trashArea = view.findViewById(R.id.trashArea)
+        tableDataManager = TableDataManager(mContext)
 
         val textViewPalette = view.findViewById<LinearLayout>(R.id.textViewPalette)
         val editTextPalette = view.findViewById<LinearLayout>(R.id.editTextPalette)
         val buttonPalette = view.findViewById<LinearLayout>(R.id.buttonPalette)
 
-        creatorUI = CreatorUI(view.context, layoutInflater, SettingComponentDialog(view.context))
+        creatorUI = CreatorUI(view.context, layoutInflater, SettingComponentDialog(view.context, tableDataManager))
         val dragManager = DragManager(workArea, requireActivity(), creatorUI)
         uiManager = UIManager(view.context, creatorUI)
 
@@ -123,7 +126,8 @@ class ConstructorFragment : Fragment() {
 
     private fun saveCurrentLayout() {
         val success = uiManager.saveLayoutToFile(workArea, creatorUI.getElementCounter())
-        if (success) {
+        val success2 = tableDataManager.autoDetectSchemaAndSave(workArea)
+        if (success && success2) {
             Log.d("LayoutSave", "Layout saved to file")
         } else {
             Log.e("LayoutSave", "Failed to save layout to file")

@@ -13,7 +13,9 @@ import com.vlg.constructorinterface.createui.CreatorUI
 import com.vlg.constructorinterface.createui.UIManager
 import com.vlg.constructorinterface.event.ActionExecutor
 import com.vlg.constructorinterface.event.EventDelegat
-import java.util.UUID
+import com.vlg.constructorinterface.table.TableDataManager
+import com.vlg.constructorinterface.table.TableSchema
+import kotlin.random.Random
 
 class RunFragment : Fragment() {
 
@@ -23,7 +25,7 @@ class RunFragment : Fragment() {
     private lateinit var executor: ActionExecutor
     private lateinit var eventDelegat: EventDelegat
     private lateinit var tableDataManager: TableDataManager
-    private var schema: TableDataManager.TableSchema? = null
+    private var schema: TableSchema? = null
     private lateinit var navigator: Navigator
 
     override fun onAttach(context: Context) {
@@ -50,9 +52,14 @@ class RunFragment : Fragment() {
         executor = ActionExecutor(eventDelegat)
 
         eventDelegat.setOnCreateEntry {
+            Log.d("!!!setOnCreateEntry", "start save")
             val values = mutableMapOf<String, String>()
-            uiManager.getListOfEditTexts().forEach { values.put(it.hint, it.text) }
-            tableDataManager.addNewRow(schema, UUID.randomUUID().timestamp().toInt(), values)
+            uiManager.getListOfEditTexts().forEach { values.put(it.tag.toString(), it.text.toString()) }
+            uiManager.getListOfEditTexts().forEach { Log.d("!! !fff", it.text.toString()) }
+            val uid = Random.nextInt(1000000000) + Random.nextInt(100000000)
+            Log.d("!!!setOnCreateEntry", "$uid $values")
+            val success = tableDataManager.saveTableSchema(tableDataManager.addNewRow(schema, uid, values))
+            Log.d("!!!setOnCreateEntry", "end save $success")
         }
 
         eventDelegat.setOnDeleteEntry { }
@@ -74,7 +81,7 @@ class RunFragment : Fragment() {
 
         if (layout != null) {
             try {
-                Log.d("!!!", uiManager.getLayoutFileManager().loadActionsFromFile().toString())
+                Log.d("!!!loadActionsFromFile", uiManager.getLayoutFileManager().loadActionsFromFile().toString())
                 uiManager.restoreLayout(layout, workArea, executor = executor, actions = uiManager.getLayoutFileManager().loadActionsFromFile())
                 Toast.makeText(view.context, "Интерфейс загружен из файла", Toast.LENGTH_SHORT)
                     .show()

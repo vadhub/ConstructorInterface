@@ -7,5 +7,6 @@
         <item>toast</item>
         <item>dialog</item>
         <item>write</item>
+        <item>open_table</item>
     </string-array>
 </resources>

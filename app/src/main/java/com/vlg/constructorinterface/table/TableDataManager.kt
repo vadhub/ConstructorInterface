@@ -1,4 +1,4 @@
-package com.vlg.constructorinterface
+package com.vlg.constructorinterface.table
 
 import android.content.Context
 import android.util.Log
@@ -6,8 +6,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.vlg.constructorinterface.filemanager.FileManager.loadFromFile
-import com.vlg.constructorinterface.filemanager.FileManager.saveToFile
+import com.vlg.constructorinterface.filemanager.FileManager
 
 class TableDataManager(private val context: Context) {
 
@@ -18,24 +17,6 @@ class TableDataManager(private val context: Context) {
     fun getListNamesTables() = TABLE_DATA_FILE // future: list from file
 
     private val gson = Gson()
-
-    // Структура таблицы
-    data class TableSchema(
-        val columns: List<ColumnInfo>,
-        val rows: List<TableRow>
-    )
-
-    data class ColumnInfo(
-        val id: String,           // Уникальный ID столбца
-        val name: String,         // Отображаемое имя (например, "ФИО")
-        val type: String,         // Тип данных ("text", "number", etc.)
-        val order: Int            // Порядок столбца
-    )
-
-    data class TableRow(
-        val rowId: Int,           // ID строки в интерфейсе
-        val values: Map<String, String> // ColumnId -> Value
-    )
 
     // Автоматически определяем схему на основе содержимого интерфейса
     fun autoDetectSchemaAndSave(workArea: LinearLayout): Boolean {
@@ -70,7 +51,7 @@ class TableDataManager(private val context: Context) {
                         element is EditText -> {
                             val hint = element.hint?.toString() ?: "Поле ${colIndex + 1}"
                             val value = element.text?.toString() ?: ""
-                            val columnId = element.hint.toString()
+                            val columnId = element.tag.toString()
 
                             // Если столбец еще не зарегистрирован
                             if (!columnMap.containsKey(columnId)) {
@@ -107,7 +88,7 @@ class TableDataManager(private val context: Context) {
     fun saveTableSchema(schema: TableSchema): Boolean {
         return try {
             val json = gson.toJson(schema)
-            saveToFile(context,TABLE_DATA_FILE, json)
+            FileManager.saveToFile(context, TABLE_DATA_FILE, json)
             Log.d("TableData", "Схема сохранена: ${schema.columns.size} столбцов, ${schema.rows.size} строк")
             true
         } catch (e: Exception) {
@@ -119,7 +100,7 @@ class TableDataManager(private val context: Context) {
     // Загрузка структуры таблицы
     fun loadTableSchema(): TableSchema? {
         return try {
-            val json = loadFromFile(context,TABLE_DATA_FILE)
+            val json = FileManager.loadFromFile(context, TABLE_DATA_FILE)
             if (json.isNullOrEmpty()) return null
 
             val type = object : TypeToken<TableSchema>() {}.type

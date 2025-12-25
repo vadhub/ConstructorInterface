@@ -18,8 +18,9 @@ import androidx.core.widget.doOnTextChanged
 import com.vlg.constructorinterface.event.ElementAction
 import com.vlg.constructorinterface.event.ElementEvent
 import com.vlg.constructorinterface.R
+import com.vlg.constructorinterface.table.TableDataManager
 
-class SettingComponentDialog(private val context: Context) {
+class SettingComponentDialog(private val context: Context, private val tableDataManager: TableDataManager) {
 
     private lateinit var eventTypeSpinner: Spinner
     private lateinit var textEditText: EditText
@@ -157,6 +158,9 @@ class SettingComponentDialog(private val context: Context) {
             3 -> { // write
                 hideAllEventFields()
             }
+            4 -> { // open_table
+                hideAllEventFields()
+            }
         }
     }
 
@@ -190,8 +194,11 @@ class SettingComponentDialog(private val context: Context) {
             }
             3 -> actions.put(
                 view.tag.toString(),
-                ElementAction(ElementEvent.CreateEntry(""))
+                ElementAction(ElementEvent.CreateEntry(tableDataManager.getListNamesTables()), view.tag.toString())
                 )
+            4 -> actions.put(view.tag.toString(),
+                ElementAction(ElementEvent.OpenTable(tableDataManager.getListNamesTables()), view.tag.toString()))
+
         }
     }
 

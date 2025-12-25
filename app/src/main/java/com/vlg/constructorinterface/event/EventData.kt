@@ -69,8 +69,8 @@ fun ElementEvent.toJson(): JSONObject {
                 put("code", code)
             }
             is ElementEvent.OpenTable -> {
-                put("type", "")
-                put("name", tableName)
+                put("type", "OpenTable")
+                put("tableName", tableName)
             }
         }
     }
@@ -105,7 +105,7 @@ fun JSONObject.toElementEvent(): ElementEvent {
             ElementEvent.ShowDialog(title, message)
         }
         "CreateEntry" -> {
-            val name = this.getString("name")
+            val name = this.getString("tableName")
             ElementEvent.CreateEntry(name)
         }
         "DeleteEntry" -> {
@@ -125,7 +125,7 @@ fun JSONObject.toElementEvent(): ElementEvent {
             ElementEvent.RunCustomCode(code)
         }
         "OpenTable" -> {
-            val name = this.getString("name")
+            val name = this.getString("tableName")
             ElementEvent.OpenTable(name)
         }
         else -> throw IllegalArgumentException("Unknown event type: $type")

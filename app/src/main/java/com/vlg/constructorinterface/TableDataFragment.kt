@@ -6,10 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.vlg.constructorinterface.table.TableDataManager
+import com.vlg.constructorinterface.table.getFormattedTableAligned
 
 class TableDataFragment : Fragment() {
 
     private lateinit var table: TextView
+    private lateinit var tableDataManager: TableDataManager
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -20,7 +23,10 @@ class TableDataFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        tableDataManager = TableDataManager(view.context)
+        val schema = tableDataManager.loadTableSchema()
         table = view.findViewById(R.id.table)
+        table.text = schema?.getFormattedTableAligned()
     }
 
 }

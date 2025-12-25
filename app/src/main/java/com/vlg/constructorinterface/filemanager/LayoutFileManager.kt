@@ -51,7 +51,7 @@ class LayoutFileManager(private val context: Context) {
             jsonArray.toElementActionList().associateBy { it.targetId }.toMutableMap()
         } catch (e: Exception) {
             e.printStackTrace()
-            emptyMap<String, ElementAction>() as MutableMap<String, ElementAction>
+            mutableMapOf()
         }
     }
 
