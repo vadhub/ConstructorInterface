@@ -11,6 +11,7 @@ import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.core.view.isEmpty
+import com.vlg.constructorinterface.customview.FakeSpinner
 import com.vlg.constructorinterface.event.ActionExecutor
 import com.vlg.constructorinterface.event.ElementAction
 import com.vlg.constructorinterface.event.ElementEvent
@@ -21,16 +22,19 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
 
     private var layoutFileManager: LayoutFileManager = LayoutFileManager(context)
     private val listOfEditTexts: MutableList<EditText> = mutableListOf()
+    private val listOfSpinners: MutableList<Spinner> = mutableListOf()
 
     fun getLayoutFileManager() = layoutFileManager
     fun getListOfEditTexts() = listOfEditTexts
+    fun getListOfSpinners() = listOfSpinners
 
     fun createElementFromData(
         elementData: UiElement,
         trashArea: LinearLayout? = null,
-        placementHint: TextView? = null
+        placementHint: TextView? = null,
+        isFakeLayout: Boolean = false
     ): View {
-        return createComponentFromData(elementData).apply {
+        return createComponentFromData(elementData, isFakeLayout).apply {
             setOnLongClickListener { view ->
                 val type = when (view) {
                     is TextView -> if (view !is Button && view !is EditText) Type.TEXTVIEW else "UNKNOWN"
@@ -79,22 +83,24 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
     fun createElementFromDataWithActions(
         elementData: UiElement,
         event: ElementEvent?,
-        executor: ActionExecutor
+        executor: ActionExecutor,
+        isFakeLayout: Boolean = false
     ): View {
-        return createComponentFromData(elementData).apply {
+        return createComponentFromData(elementData, isFakeLayout).apply {
             if (elementData.type == Type.SPINNER) {
-                (this as Spinner).onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                    override fun onItemSelected(
-                        parent: AdapterView<*>?,
-                        view: View?,
-                        position: Int,
-                        id: Long
-                    ) {
-                        creatorUI.handleDoubleClick(this@apply)
-                    }
+                (this as Spinner).onItemSelectedListener =
+                    object : AdapterView.OnItemSelectedListener {
+                        override fun onItemSelected(
+                            parent: AdapterView<*>?,
+                            view: View?,
+                            position: Int,
+                            id: Long
+                        ) {
+                            creatorUI.handleDoubleClick(this@apply)
+                        }
 
-                    override fun onNothingSelected(parent: AdapterView<*>?) {}
-                }
+                        override fun onNothingSelected(parent: AdapterView<*>?) {}
+                    }
             } else {
                 setOnClickListener {
                     if (event != null) {
@@ -108,7 +114,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
         }
     }
 
-    private fun createComponentFromData(elementData: UiElement) =
+    private fun createComponentFromData(elementData: UiElement, isFakeLayout: Boolean = false) =
         when (elementData.type) {
             Type.TEXTVIEW -> {
                 creatorUI.createTextView(elementData)
@@ -124,7 +130,15 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                 creatorUI.createButton(elementData)
             }
 
-            Type.SPINNER -> creatorUI.createSpinner(elementData)
+            Type.SPINNER -> {
+                if (!isFakeLayout) {
+                    val spinner = creatorUI.createSpinner(elementData)
+                    listOfSpinners.add(spinner)
+                    spinner
+                } else {
+                    creatorUI.createFakeSpinner(elementData)
+                }
+            }
         }
 
     fun saveCurrentLayout(workArea: LinearLayout): String {
@@ -201,11 +215,11 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                             )
                         }
 
-                        is TextView -> {
-                            Log.d("SaveDebug", "    Это TextView: text=${element.text}")
+                        is FakeSpinner -> {
+                            Log.d("SaveDebug", "    Это Spinner: text=${element.text}")
                             UiElement(
                                 id = elementId,
-                                type = Type.TEXTVIEW,
+                                type = Type.SPINNER,
                                 text = element.text.toString(),
                                 position = Position(
                                     row = i,
@@ -220,15 +234,12 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                             )
                         }
 
-                        is Spinner -> {
-                            Log.d(
-                                "SaveDebug",
-                                "    Это Spinner: text=${element.adapter.getItemId(0)}"
-                            )
+                        is TextView -> {
+                            Log.d("SaveDebug", "    Это TextView: text=${element.text}")
                             UiElement(
                                 id = elementId,
-                                type = Type.SPINNER,
-                                text = CreatorUI.retrieveAllItems(element),
+                                type = Type.TEXTVIEW,
+                                text = element.text.toString(),
                                 position = Position(
                                     row = i,
                                     column = j,
@@ -307,7 +318,8 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
         placementHint: TextView? = null,
         trashArea: LinearLayout? = null,
         executor: ActionExecutor? = null,
-        actions: MutableMap<String, ElementAction>? = null
+        actions: MutableMap<String, ElementAction>? = null,
+        isFakeLayout: Boolean = false
     ) {
         workArea.removeAllViews()
         creatorUI.clearElementsMap()
@@ -331,13 +343,14 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
 
             for (elementData in rowData.elements) {
                 val element = if (executor == null)
-                    createElementFromData(elementData, trashArea, placementHint)
+                    createElementFromData(elementData, trashArea, placementHint, isFakeLayout)
                 else {
                     Log.d("!!! restore ui manager", actions.toString())
                     createElementFromDataWithActions(
                         elementData,
                         actions?.get(elementData.id)?.event,
-                        executor
+                        executor,
+                        isFakeLayout
                     )
                 }
 

@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.toColorInt
 import com.vlg.constructorinterface.R
+import com.vlg.constructorinterface.customview.FakeSpinner
 
 class DragManager(private val workArea: LinearLayout, private val activity: Activity, private val creatorUI: CreatorUI) {
 
@@ -169,7 +170,7 @@ class DragManager(private val workArea: LinearLayout, private val activity: Acti
             else "Элемент"
             is EditText -> "Поле ввода"
             is Button -> "Кнопка \"${element.text}\""
-            is Spinner -> "Выпадающий список"
+            is FakeSpinner -> "Выпадающий список"
             else -> "Элемент"
         }
 

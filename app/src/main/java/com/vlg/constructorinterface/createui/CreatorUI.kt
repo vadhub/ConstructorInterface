@@ -19,11 +19,16 @@ import android.widget.Toast
 import androidx.core.graphics.toColorInt
 import androidx.core.view.isEmpty
 import com.vlg.constructorinterface.R
+import com.vlg.constructorinterface.customview.FakeSpinner
 import com.vlg.constructorinterface.event.ElementAction
 import java.util.UUID
 
 
-class CreatorUI(private val context: Context, private val layoutInflater: LayoutInflater, private val settingComponentDialog: SettingComponentDialog? = null) {
+class CreatorUI(
+    private val context: Context,
+    private val layoutInflater: LayoutInflater,
+    private val settingComponentDialog: SettingComponentDialog? = null
+) {
 
     private var lastClickTime: Long = 0
     private var lastClickedView: View? = null
@@ -43,19 +48,6 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
             adapterList.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             return adapterList
         }
-
-        fun retrieveAllItems(theSpinner: Spinner): String {
-            val adapter = theSpinner.adapter
-            val itemCount: Int = adapter.count
-            val items: MutableList<String> = ArrayList(itemCount)
-
-            for (i in 0..<itemCount) {
-                val item: String = adapter.getItem(i) as String
-                items.add(item)
-            }
-
-            return items.joinToString(",")
-        }
     }
 
     fun getActions() = actions
@@ -63,6 +55,7 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
     fun setElementCounter(i: Int) {
         this.elementCounter = i
     }
+
     fun clearElementsMap() {
         elementsMap.clear()
     }
@@ -89,7 +82,7 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
             Type.TEXTVIEW.name -> createTextView()
             Type.EDITTEXT.name -> createEditText()
             Type.BUTTON.name -> createButton()
-            Type.SPINNER.name -> createSpinner()
+            Type.SPINNER.name -> createFakeSpinner()
             else -> createTextView()
         }.apply {
             val elementId = UUID.randomUUID().toString()
@@ -101,7 +94,7 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
                 val type = when (view) {
                     is EditText -> Type.EDITTEXT.name
                     is Button -> Type.BUTTON.name
-                    is TextView ->  Type.TEXTVIEW.name
+                    is TextView -> Type.TEXTVIEW.name
                     else -> "UNKNOWN"
                 }
 
@@ -118,27 +111,8 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
 
                 true
             }
-
-            Log.d("!!1 create element", this.toString())
-
-            if (this is Spinner) {
-                onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                    override fun onItemSelected(
-                        parent: AdapterView<*>?,
-                        view: View?,
-                        position: Int,
-                        id: Long
-                    ) {
-                        handleDoubleClick(this@apply)
-                    }
-
-                    override fun onNothingSelected(parent: AdapterView<*>?) {}
-                }
-            } else {
-
-                setOnClickListener {
-                    handleDoubleClick(this)
-                }
+            setOnClickListener {
+                handleDoubleClick(this)
             }
         }
     }
@@ -255,7 +229,12 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
         Log.d("DragDebug", "No row found, will create new one")
     }
 
-    fun highlightRow(row: LinearLayout, relativeY: Float, rowHeight: Float, placementHint: TextView) {
+    fun highlightRow(
+        row: LinearLayout,
+        relativeY: Float,
+        rowHeight: Float,
+        placementHint: TextView
+    ) {
         val halfHeight = rowHeight / 2
 
         if (relativeY < halfHeight) {
@@ -302,7 +281,7 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
         }
 
         editText.setText(element?.text ?: "")
-        elementsMap[element?.id ?:editText.tag.toString()] = editText // Сохраняем в мапу
+        elementsMap[element?.id ?: editText.tag.toString()] = editText // Сохраняем в мапу
         elementCounter++
         return editText
     }
@@ -316,7 +295,7 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
             tag = element?.id ?: UUID.randomUUID().toString()
             isClickable = true
         }
-        elementsMap[element?.id ?:button.tag.toString()] = button
+        elementsMap[element?.id ?: button.tag.toString()] = button
         elementCounter++
         return button
     }
@@ -326,14 +305,29 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
         val adapterList = createAdapterSpinner(context, element?.text ?: "")
 
         val spinner: Spinner = Spinner(context).apply {
-            setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
+            setPadding(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8))
             tag = element?.id ?: UUID.randomUUID().toString()
             adapter = adapterList
         }
 
-        elementsMap[element?.id ?:spinner.tag.toString()] = spinner
+        elementsMap[element?.id ?: spinner.tag.toString()] = spinner
         elementCounter++
         return spinner
+    }
+
+    fun createFakeSpinner(element: UiElement? = null): FakeSpinner {
+
+        val spinnerFake = FakeSpinner(context).apply {
+            text = element?.text ?: "Текст $elementCounter"
+            textSize = 18f
+            setBackgroundResource(R.drawable.element_background)
+            tag = element?.id ?: UUID.randomUUID().toString()
+            gravity = Gravity.CENTER
+            isClickable = true
+        }
+        elementsMap[element?.id ?: spinnerFake.tag.toString()] = spinnerFake
+        elementCounter++
+        return spinnerFake
     }
 
     fun addElementToWorkArea(workArea: LinearLayout, element: View, x: Float, y: Float) {
@@ -371,7 +365,7 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
             val rowHeight = targetRow.height.toFloat()
             val relativeY = y - targetRow.top
 
-            Log.d("DragDebug", "Row height=$rowHeight, relativeY=$relativeY, half=${rowHeight/2}")
+            Log.d("DragDebug", "Row height=$rowHeight, relativeY=$relativeY, half=${rowHeight / 2}")
 
             if (relativeY < rowHeight / 2) {
                 Log.d("DragDebug", "Top half - creating new row above")

@@ -55,11 +55,12 @@ class RunFragment : Fragment() {
             Log.d("!!!setOnCreateEntry", "start save")
             val values = mutableMapOf<String, String>()
             uiManager.getListOfEditTexts().forEach { values.put(it.tag.toString(), it.text.toString()) }
-            uiManager.getListOfEditTexts().forEach { Log.d("!! !fff", it.text.toString()) }
+            uiManager.getListOfSpinners().forEach { values.put(it.tag.toString(), it.selectedItem.toString()) }
             val uid = Random.nextInt(1000000000) + Random.nextInt(100000000)
             Log.d("!!!setOnCreateEntry", "$uid $values")
-            val success = tableDataManager.saveTableSchema(tableDataManager.addNewRow(schema, uid, values))
-            Log.d("!!!setOnCreateEntry", "end save $success")
+            val success1 = tableDataManager.saveTableSchema(tableDataManager.addNewRow(schema, uid, values))
+
+            Log.d("!!!setOnCreateEntry", "end save $success1")
         }
 
         eventDelegat.setOnDeleteEntry { }
