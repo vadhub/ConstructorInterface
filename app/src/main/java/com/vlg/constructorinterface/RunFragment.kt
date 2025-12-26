@@ -82,7 +82,6 @@ class RunFragment : Fragment() {
 
         if (layout != null) {
             try {
-                Log.d("!!!loadActionsFromFile", uiManager.getLayoutFileManager().loadActionsFromFile().toString())
                 uiManager.restoreLayout(layout, workArea, executor = executor, actions = uiManager.getLayoutFileManager().loadActionsFromFile())
                 Toast.makeText(view.context, "Интерфейс загружен из файла", Toast.LENGTH_SHORT)
                     .show()

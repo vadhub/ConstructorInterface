@@ -82,7 +82,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
 
     fun createElementFromDataWithActions(
         elementData: UiElement,
-        event: ElementEvent?,
+        event: List<ElementEvent>?,
         executor: ActionExecutor,
         isFakeLayout: Boolean = false
     ): View {
@@ -160,24 +160,11 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                     val elementId = element.tag?.toString()
 
                     if (elementId == null) {
-                        Log.d(
-                            "SaveDebug",
-                            "  Элемент $j: НЕТ ТЕГА! класс=${element.javaClass.simpleName}"
-                        )
                         continue
                     }
 
-                    Log.d(
-                        "SaveDebug",
-                        "  Элемент $j: класс=${element.javaClass.simpleName}, tag=$elementId"
-                    )
-
                     val uiElement = when (element) {
                         is EditText -> {
-                            Log.d(
-                                "SaveDebug",
-                                "    Это EditText: hint=${element.hint}, text=${element.text}"
-                            )
                             UiElement(
                                 id = elementId,
                                 type = Type.EDITTEXT,
@@ -277,10 +264,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
         )
 
         val json = LayoutSerializer.saveLayout(layout)
-        Log.d(
-            "SaveDebug",
-            "Всего строк: ${rows.size}, элементов: ${rows.sumOf { it.elements.size }}"
-        )
+        Log.d("SaveDebug", "Всего строк: ${rows.size}, элементов: ${rows.sumOf { it.elements.size }}")
         Log.d("SaveDebug", "JSON: $json")
 
         return json
@@ -348,7 +332,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                     Log.d("!!! restore ui manager", actions.toString())
                     createElementFromDataWithActions(
                         elementData,
-                        actions?.get(elementData.id)?.event,
+                        actions?.get(elementData.id)?.events,
                         executor,
                         isFakeLayout
                     )

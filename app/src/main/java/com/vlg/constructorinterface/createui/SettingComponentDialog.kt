@@ -20,22 +20,25 @@ import com.vlg.constructorinterface.event.ElementEvent
 import com.vlg.constructorinterface.R
 import com.vlg.constructorinterface.table.TableDataManager
 
-class SettingComponentDialog(private val context: Context, private val tableDataManager: TableDataManager) {
+class SettingComponentDialog(
+    private val context: Context,
+    private val tableDataManager: TableDataManager
+) {
 
     private lateinit var eventTypeSpinner: Spinner
+    private lateinit var renameEditText: EditText
+    private lateinit var charCount: TextView
     private lateinit var textEditText: EditText
-    private lateinit var editText: EditText
     private lateinit var textTitleEditText: EditText
     private lateinit var textToastEditText: EditText
     private lateinit var charCountDialog: TextView
-    private lateinit var charCount: TextView
     private lateinit var charCountDialogTitle: TextView
     private lateinit var charCountToastTitle: TextView
-
     private lateinit var dialogTextLabel: TextView
     private lateinit var dialogTitleLabel: TextView
     private lateinit var toastTextLabel: TextView
-    private var action = 0
+
+    private var selectedActionType: ActionType? = null
 
     fun showDialog(
         layoutInflater: LayoutInflater,
@@ -54,46 +57,25 @@ class SettingComponentDialog(private val context: Context, private val tableData
         setupSpinner()
         setupTextWatchers()
 
-        editText.setText(currentText)
-        editText.setSelection(currentText.length)
-
-        editText.doOnTextChanged { text, _, _, _ ->
-            val count = text?.length ?: 0
-            charCount.text = "$count/50"
-        }
+        renameEditText.setText(currentText)
+        renameEditText.setSelection(currentText.length)
+        updateCharCount(renameEditText, charCount)
 
         val dialog = AlertDialog.Builder(context)
             .setTitle("Переименование")
             .setView(dialogView)
             .setPositiveButton("Сохранить") { _, _ ->
-                val newText = editText.text.toString().trim()
-                if (newText.isNotEmpty()) {
-                    when (view) {
-                        is EditText -> view.hint = newText
-                        is TextView -> view.text = newText
-                        is Button -> view.text = newText
-                        is Spinner -> view.adapter = CreatorUI.createAdapterSpinner(context, newText)
-                    }
-                    Toast.makeText(context, "Текст изменен", Toast.LENGTH_SHORT).show()
-                }
-
-                if (action != 0) {
-                    setUpAction(action, view, actions)
-                    Log.d("!!!333", view.tag.toString())
-                    Toast.makeText(context, "Событие установлено", Toast.LENGTH_SHORT).show()
-                }
+                handleSaveClick(view, actions)
             }
             .setNegativeButton("Отмена", null)
             .create()
 
         dialog.show()
-
-        charCount.text = "${currentText.length}/50"
-        editText.requestFocus()
+        renameEditText.requestFocus()
     }
 
     private fun initViews(view: View) {
-        editText = view.findViewById(R.id.renameEditText)
+        renameEditText = view.findViewById(R.id.renameEditText)
         charCount = view.findViewById(R.id.charCount)
         eventTypeSpinner = view.findViewById(R.id.eventTypeSpinner)
         textEditText = view.findViewById(R.id.textEditText)
@@ -108,46 +90,38 @@ class SettingComponentDialog(private val context: Context, private val tableData
     }
 
     private fun setupSpinner() {
-        val adapter = ArrayAdapter.createFromResource(
+        ArrayAdapter.createFromResource(
             context,
             R.array.event_types,
             android.R.layout.simple_spinner_item
-        )
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        eventTypeSpinner.adapter = adapter
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            eventTypeSpinner.adapter = this
+        }
 
         eventTypeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                action = position
-                updateUIForEventType(position)
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                selectedActionType = ActionType.fromPosition(position)
+                updateUIForEventType(selectedActionType)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
+                selectedActionType = null
+                hideAllEventFields()
             }
         }
     }
 
-    private fun updateUIForEventType(
-        position: Int,
-    ) {
+    private fun updateUIForEventType(type: ActionType?) {
         hideAllEventFields()
 
-        when (position) {
-            0 -> { // none
-            }
-
-            1 -> { // toast
+        when (type) {
+            ActionType.TOAST -> {
                 toastTextLabel.visibility = View.VISIBLE
                 textToastEditText.visibility = View.VISIBLE
                 charCountToastTitle.visibility = View.VISIBLE
             }
-
-            2 -> { // dialog
+            ActionType.DIALOG -> {
                 dialogTextLabel.visibility = View.VISIBLE
                 textEditText.visibility = View.VISIBLE
                 charCountDialog.visibility = View.VISIBLE
@@ -155,89 +129,115 @@ class SettingComponentDialog(private val context: Context, private val tableData
                 textTitleEditText.visibility = View.VISIBLE
                 charCountDialogTitle.visibility = View.VISIBLE
             }
+            ActionType.CREATE_ENTRY, ActionType.OPEN_TABLE -> Unit
+            else -> Unit
+        }
+    }
 
-            3 -> { // write
-                hideAllEventFields()
+    private fun handleSaveClick(view: View, actions: MutableMap<String, ElementAction>) {
+        val newText = renameEditText.text.toString().trim()
+
+        if (newText.isNotEmpty()) {
+            when (view) {
+                is EditText -> view.hint = newText
+                is TextView -> view.text = newText
+                is Button -> view.text = newText
+                is Spinner -> view.adapter = CreatorUI.createAdapterSpinner(context, newText)
             }
-            4 -> { // open_table
-                hideAllEventFields()
+            Toast.makeText(context, "Текст изменён", Toast.LENGTH_SHORT).show()
+        }
+
+        selectedActionType?.let { actionType ->
+            view.tag?.toString()?.let { tag ->
+                try {
+                    val elementAction = createElementAction(actionType, tag)
+                    actions[tag] = elementAction
+                    Toast.makeText(context, "Событие установлено", Toast.LENGTH_SHORT).show()
+                    Log.d("SettingComponentDialog", "Действие установлено для тега: $tag")
+                } catch (e: Exception) {
+                    Toast.makeText(
+                        context,
+                        "Ошибка при создании действия: ${e.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    Log.e("SettingComponentDialog", "Ошибка: $e")
+                }
+            } ?: run {
+                Toast.makeText(context, "Компонент не имеет тега", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun setUpAction(type: Int, view: View, actions: MutableMap<String, ElementAction>) {
-        when (type) {
-            0 -> {
-
-            }
-
-            1 -> {
-                actions.put(
-                    view.tag.toString(),
-                    ElementAction(
-                        ElementEvent.ShowToast(textToastEditText.text.toString()),
-                        view.tag.toString(),
-                        ""
+    private fun createElementAction(type: ActionType, tag: String): ElementAction {
+        return when (type) {
+            ActionType.TOAST -> ElementAction(
+                mutableListOf(ElementEvent.ShowToast(textToastEditText.text.toString())),
+                tag,
+                ""
+            )
+            ActionType.DIALOG -> ElementAction(
+                mutableListOf(
+                    ElementEvent.ShowDialog(
+                        textTitleEditText.text.toString(),
+                        textEditText.text.toString()
                     )
-                )
-            }
-
-            2 -> {
-                actions.put(
-                    view.tag.toString(),
-                    ElementAction(
-                        ElementEvent.ShowDialog(
-                            dialogTitleLabel.text.toString(),
-                            textEditText.text.toString()
-                        ), view.tag.toString(), ""
-                    )
-                )
-            }
-            3 -> actions.put(
-                view.tag.toString(),
-                ElementAction(ElementEvent.CreateEntry(tableDataManager.getListNamesTables()), view.tag.toString())
-                )
-            4 -> actions.put(view.tag.toString(),
-                ElementAction(ElementEvent.OpenTable(tableDataManager.getListNamesTables()), view.tag.toString()))
-
+                ),
+                tag,
+                ""
+            )
+            ActionType.CREATE_ENTRY -> ElementAction(
+                mutableListOf(ElementEvent.CreateEntry(tableDataManager.getListNamesTables())),
+                tag,
+                ""
+            )
+            ActionType.OPEN_TABLE -> ElementAction(
+                mutableListOf(ElementEvent.OpenTable(tableDataManager.getListNamesTables())),
+                tag,
+                ""
+            )
+            else -> throw IllegalArgumentException("Неподдерживаемый тип действия: $type")
         }
     }
+
 
     private fun hideAllEventFields() {
-        dialogTextLabel.visibility = View.GONE
-        textEditText.visibility = View.GONE
-        charCountDialog.visibility = View.GONE
-        dialogTitleLabel.visibility = View.GONE
-        textTitleEditText.visibility = View.GONE
-        charCountDialogTitle.visibility = View.GONE
-        toastTextLabel.visibility = View.GONE
-        textToastEditText.visibility = View.GONE
-        charCountToastTitle.visibility = View.GONE
+        listOf(
+            dialogTextLabel, textEditText, charCountDialog,
+            dialogTitleLabel, textTitleEditText, charCountDialogTitle,
+            toastTextLabel, textToastEditText, charCountToastTitle
+        ).forEach { it.visibility = View.GONE }
     }
 
     private fun setupTextWatchers() {
-        textEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                charCountDialog.text = "${s?.length ?: 0}/50"
-            }
-        })
+        textEditText.doOnTextChanged { text, _, _, _ ->
+            charCountDialog.text = "${text?.length ?: 0}/50"
+        }
 
-        textTitleEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                charCountDialogTitle.text = "${s?.length ?: 0}/50"
-            }
-        })
+        textTitleEditText.doOnTextChanged { text, _, _, _ ->
+            charCountDialogTitle.text = "${text?.length ?: 0}/50"
+        }
 
-        textToastEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                charCountToastTitle.text = "${s?.length ?: 0}/50"
-            }
-        })
+        textToastEditText.doOnTextChanged { text, _, _, _ ->
+            charCountToastTitle.text = "${text?.length ?: 0}/50"
+        }
+    }
+
+    private fun updateCharCount(editText: EditText, counterView: TextView) {
+        val text = editText.text
+        counterView.text = "${text?.length ?: 0}/50"
+    }
+}
+
+enum class ActionType(val position: Int) {
+    NONE(0),
+    TOAST(1),
+    DIALOG(2),
+    CREATE_ENTRY(3),
+    OPEN_TABLE(4);
+
+    companion object {
+        fun fromPosition(position: Int): ActionType? {
+            return values().find { it.position == position }
+        }
     }
 }

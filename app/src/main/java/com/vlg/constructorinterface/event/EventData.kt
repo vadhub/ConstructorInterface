@@ -12,19 +12,27 @@ sealed class ElementEvent {
     data class GetTextFromEditText(val editTextId: Int) : ElementEvent()
     data class ChangeText(val newText: String) : ElementEvent()
     data class RunCustomCode(val code: String) : ElementEvent()
+    data class MathOperation(val terms: List<Term>, val operationType: OperationType) : ElementEvent() {
+        fun isValid(): Boolean {
+            return terms.isNotEmpty() &&
+                    (operationType != OperationType.DIVISION || terms.all { it.data.toDouble() != 0.0 })
+        }
+    }
+}
+
+enum class OperationType {
+    ADDITION, SUBTRACTION, MULTIPLICATION, DIVISION, POWER
 }
 
 data class ElementAction(
-    val event: ElementEvent,
+    val events: MutableList<ElementEvent>,
     val targetId: String = "",
     val description: String = ""
 )
 
 fun List<ElementAction>.toJsonArray(): JSONArray {
     return JSONArray().apply {
-        this@toJsonArray.forEach { action ->
-            put(action.toJson())
-        }
+        forEach { action -> put(action.toJson()) }
     }
 }
 
@@ -32,7 +40,11 @@ fun ElementAction.toJson(): JSONObject {
     return JSONObject().apply {
         put("targetId", targetId)
         put("description", description)
-        put("event", event.toJson())
+        put("events", JSONArray().apply {
+            events.forEach { event ->
+                put(event.toJson())
+            }
+        })
     }
 }
 
@@ -56,6 +68,10 @@ fun ElementEvent.toJson(): JSONObject {
                 put("type", "DeleteEntry")
                 put("tableName", tableName)
             }
+            is ElementEvent.OpenTable -> {
+                put("type", "OpenTable")
+                put("tableName", tableName)
+            }
             is ElementEvent.GetTextFromEditText -> {
                 put("type", "GetTextFromEditText")
                 put("editTextId", editTextId)
@@ -68,9 +84,17 @@ fun ElementEvent.toJson(): JSONObject {
                 put("type", "RunCustomCode")
                 put("code", code)
             }
-            is ElementEvent.OpenTable -> {
-                put("type", "OpenTable")
-                put("tableName", tableName)
+            is ElementEvent.MathOperation -> {
+                put("type", "MathOperation")
+                put("terms", JSONArray().apply {
+                    terms.forEach { term ->
+                        put(JSONObject().apply {
+                            put("isConst", term.isConst)
+                            put("data", term.data)
+                        })
+                    }
+                })
+                put("operationType", operationType.name)
             }
         }
     }
@@ -78,55 +102,74 @@ fun ElementEvent.toJson(): JSONObject {
 
 fun JSONArray.toElementActionList(): List<ElementAction> {
     val actions = mutableListOf<ElementAction>()
-    for (i in 0 until this.length()) {
-        val jsonObject = this.getJSONObject(i)
+    for (i in 0 until length()) {
+        val jsonObject = getJSONObject(i)
         actions.add(jsonObject.toElementAction())
     }
     return actions
 }
 
 fun JSONObject.toElementAction(): ElementAction {
-    val targetId = this.optString("targetId", "")
-    val description = this.optString("description", "")
-    val event = this.getJSONObject("event").toElementEvent()
-    return ElementAction(event, targetId, description)
+    val targetId = optString("targetId", "")
+    val description = optString("description", "")
+
+    val eventsJson = getJSONArray("events")
+    val events = mutableListOf<ElementEvent>()
+    for (i in 0 until eventsJson.length()) {
+        val eventJson = eventsJson.getJSONObject(i)
+        events.add(eventJson.toElementEvent())
+    }
+
+    return ElementAction(events, targetId, description)
 }
 
 fun JSONObject.toElementEvent(): ElementEvent {
-    val type = this.getString("type")
+    val type = getString("type")
     return when (type) {
         "ShowToast" -> {
-            val message = this.getString("message")
+            val message = getString("message")
             ElementEvent.ShowToast(message)
         }
         "ShowDialog" -> {
-            val title = this.getString("title")
-            val message = this.getString("message")
+            val title = getString("title")
+            val message = getString("message")
             ElementEvent.ShowDialog(title, message)
         }
         "CreateEntry" -> {
-            val name = this.getString("tableName")
-            ElementEvent.CreateEntry(name)
+            val tableName = getString("tableName")
+            ElementEvent.CreateEntry(tableName)
         }
         "DeleteEntry" -> {
-            val name = this.getString("name")
-            ElementEvent.DeleteEntry(name)
+            val tableName = getString("tableName")
+            ElementEvent.DeleteEntry(tableName)
+        }
+        "OpenTable" -> {
+            val tableName = getString("tableName")
+            ElementEvent.OpenTable(tableName)
         }
         "GetTextFromEditText" -> {
-            val editTextId = this.getInt("editTextId")
+            val editTextId = getInt("editTextId")
             ElementEvent.GetTextFromEditText(editTextId)
         }
         "ChangeText" -> {
-            val newText = this.getString("newText")
+            val newText = getString("newText")
             ElementEvent.ChangeText(newText)
         }
         "RunCustomCode" -> {
-            val code = this.getString("code")
+            val code = getString("code")
             ElementEvent.RunCustomCode(code)
         }
-        "OpenTable" -> {
-            val name = this.getString("tableName")
-            ElementEvent.OpenTable(name)
+        "MathOperation" -> {
+            val termsJson = getJSONArray("terms")
+            val terms = mutableListOf<Term>()
+            for (i in 0 until termsJson.length()) {
+                val termJson = termsJson.getJSONObject(i)
+                val isConst = termJson.getBoolean("isConst")
+                val data = termJson.get("data")
+                terms.add(Term(isConst, data as Number))
+            }
+            val operationType = OperationType.valueOf(getString("operationType"))
+            ElementEvent.MathOperation(terms, operationType)
         }
         else -> throw IllegalArgumentException("Unknown event type: $type")
     }
