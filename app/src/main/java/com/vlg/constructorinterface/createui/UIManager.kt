@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.Context
 import android.util.Log
 import android.view.View
+import android.widget.AdapterView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -53,9 +54,24 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                 true
             }
 
-            setOnClickListener {
-                Log.d("!!!122", this.tag.toString())
-                creatorUI.handleDoubleClick(this)
+            if (this is Spinner) {
+                onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(
+                        parent: AdapterView<*>?,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        creatorUI.handleDoubleClick(this@apply)
+                    }
+
+                    override fun onNothingSelected(parent: AdapterView<*>?) {}
+                }
+            } else {
+
+                setOnClickListener {
+                    creatorUI.handleDoubleClick(this)
+                }
             }
         }
     }
@@ -66,12 +82,27 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
         executor: ActionExecutor
     ): View {
         return createComponentFromData(elementData).apply {
-            setOnClickListener {
-                if (event != null) {
-                    Log.d("!!! ui manager", event.toString())
-                    executor.execute(event)
-                } else {
-                    Log.d("!!! ui manager", "event NULL")
+            if (elementData.type == Type.SPINNER) {
+                (this as Spinner).onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(
+                        parent: AdapterView<*>?,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        creatorUI.handleDoubleClick(this@apply)
+                    }
+
+                    override fun onNothingSelected(parent: AdapterView<*>?) {}
+                }
+            } else {
+                setOnClickListener {
+                    if (event != null) {
+                        Log.d("!!! ui manager", event.toString())
+                        executor.execute(event)
+                    } else {
+                        Log.d("!!! ui manager", "event NULL")
+                    }
                 }
             }
         }
@@ -94,8 +125,6 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
             }
 
             Type.SPINNER -> creatorUI.createSpinner(elementData)
-
-            else -> creatorUI.createTextView(elementData)
         }
 
     fun saveCurrentLayout(workArea: LinearLayout): String {
@@ -117,12 +146,17 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                     val elementId = element.tag?.toString()
 
                     if (elementId == null) {
-                        Log.d("SaveDebug",
-                            "  Элемент $j: НЕТ ТЕГА! класс=${element.javaClass.simpleName}")
+                        Log.d(
+                            "SaveDebug",
+                            "  Элемент $j: НЕТ ТЕГА! класс=${element.javaClass.simpleName}"
+                        )
                         continue
                     }
 
-                    Log.d("SaveDebug", "  Элемент $j: класс=${element.javaClass.simpleName}, tag=$elementId")
+                    Log.d(
+                        "SaveDebug",
+                        "  Элемент $j: класс=${element.javaClass.simpleName}, tag=$elementId"
+                    )
 
                     val uiElement = when (element) {
                         is EditText -> {
@@ -187,11 +221,14 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
                         }
 
                         is Spinner -> {
-                            Log.d("SaveDebug", "    Это Spinner: text=${element.adapter.getItemId(0)}")
+                            Log.d(
+                                "SaveDebug",
+                                "    Это Spinner: text=${element.adapter.getItemId(0)}"
+                            )
                             UiElement(
                                 id = elementId,
                                 type = Type.SPINNER,
-                                text = element.adapter.toString(),
+                                text = CreatorUI.retrieveAllItems(element),
                                 position = Position(
                                     row = i,
                                     column = j,
@@ -229,7 +266,10 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI) 
         )
 
         val json = LayoutSerializer.saveLayout(layout)
-        Log.d("SaveDebug", "Всего строк: ${rows.size}, элементов: ${rows.sumOf { it.elements.size }}")
+        Log.d(
+            "SaveDebug",
+            "Всего строк: ${rows.size}, элементов: ${rows.sumOf { it.elements.size }}"
+        )
         Log.d("SaveDebug", "JSON: $json")
 
         return json

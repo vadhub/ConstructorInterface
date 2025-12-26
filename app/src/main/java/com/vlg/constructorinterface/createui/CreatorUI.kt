@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -17,9 +18,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.graphics.toColorInt
 import androidx.core.view.isEmpty
-import com.vlg.constructorinterface.event.ElementAction
 import com.vlg.constructorinterface.R
+import com.vlg.constructorinterface.event.ElementAction
 import java.util.UUID
+
 
 class CreatorUI(private val context: Context, private val layoutInflater: LayoutInflater, private val settingComponentDialog: SettingComponentDialog? = null) {
 
@@ -40,6 +42,19 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
             )
             adapterList.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             return adapterList
+        }
+
+        fun retrieveAllItems(theSpinner: Spinner): String {
+            val adapter = theSpinner.adapter
+            val itemCount: Int = adapter.count
+            val items: MutableList<String> = ArrayList(itemCount)
+
+            for (i in 0..<itemCount) {
+                val item: String = adapter.getItem(i) as String
+                items.add(item)
+            }
+
+            return items.joinToString(",")
         }
     }
 
@@ -71,9 +86,10 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
         Log.d("DragDebug", "createElement: $elementType")
 
         return when (elementType) {
-            "TEXTVIEW" -> createTextView()
-            "EDITTEXT" -> createEditText()
-            "BUTTON" -> createButton()
+            Type.TEXTVIEW.name -> createTextView()
+            Type.EDITTEXT.name -> createEditText()
+            Type.BUTTON.name -> createButton()
+            Type.SPINNER.name -> createSpinner()
             else -> createTextView()
         }.apply {
             val elementId = UUID.randomUUID().toString()
@@ -83,9 +99,9 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
             setOnLongClickListener { view ->
                 Log.d("DragDebug", "Long click on existing element")
                 val type = when (view) {
-                    is EditText -> "EDITTEXT"
-                    is Button -> "BUTTON"
-                    is TextView -> "TEXTVIEW"
+                    is EditText -> Type.EDITTEXT.name
+                    is Button -> Type.BUTTON.name
+                    is TextView ->  Type.TEXTVIEW.name
                     else -> "UNKNOWN"
                 }
 
@@ -103,8 +119,26 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
                 true
             }
 
-            setOnClickListener {
-                handleDoubleClick(this)
+            Log.d("!!1 create element", this.toString())
+
+            if (this is Spinner) {
+                onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(
+                        parent: AdapterView<*>?,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        handleDoubleClick(this@apply)
+                    }
+
+                    override fun onNothingSelected(parent: AdapterView<*>?) {}
+                }
+            } else {
+
+                setOnClickListener {
+                    handleDoubleClick(this)
+                }
             }
         }
     }
@@ -125,9 +159,6 @@ class CreatorUI(private val context: Context, private val layoutInflater: Layout
                     } else if (view is Button) {
                         Toast.makeText(context, "Кнопка", Toast.LENGTH_SHORT).show()
                     }
-                }
-                is Button -> {
-                    Toast.makeText(context, "Кнопка", Toast.LENGTH_SHORT).show()
                 }
             }
 

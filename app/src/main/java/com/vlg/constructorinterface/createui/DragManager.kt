@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -168,6 +169,7 @@ class DragManager(private val workArea: LinearLayout, private val activity: Acti
             else "Элемент"
             is EditText -> "Поле ввода"
             is Button -> "Кнопка \"${element.text}\""
+            is Spinner -> "Выпадающий список"
             else -> "Элемент"
         }
 

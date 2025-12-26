@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment
 import com.vlg.constructorinterface.createui.CreatorUI
 import com.vlg.constructorinterface.createui.DragManager
 import com.vlg.constructorinterface.createui.SettingComponentDialog
+import com.vlg.constructorinterface.createui.Type
 import com.vlg.constructorinterface.createui.UIManager
 import com.vlg.constructorinterface.table.TableDataManager
 
@@ -57,14 +58,16 @@ class ConstructorFragment : Fragment() {
         val textViewPalette = view.findViewById<LinearLayout>(R.id.textViewPalette)
         val editTextPalette = view.findViewById<LinearLayout>(R.id.editTextPalette)
         val buttonPalette = view.findViewById<LinearLayout>(R.id.buttonPalette)
+        val spinnerPalette = view.findViewById<LinearLayout>(R.id.spinnerPalette)
 
         creatorUI = CreatorUI(view.context, layoutInflater, SettingComponentDialog(view.context, tableDataManager))
         val dragManager = DragManager(workArea, requireActivity(), creatorUI)
         uiManager = UIManager(view.context, creatorUI)
 
-        textViewPalette.setOnLongClickListener { dragManager.startDrag("TEXTVIEW", it, placementHint, trashArea) }
-        editTextPalette.setOnLongClickListener { dragManager.startDrag("EDITTEXT", it, placementHint, trashArea) }
-        buttonPalette.setOnLongClickListener { dragManager.startDrag("BUTTON", it, placementHint, trashArea) }
+        textViewPalette.setOnLongClickListener { dragManager.startDrag(Type.TEXTVIEW.name, it, placementHint, trashArea) }
+        editTextPalette.setOnLongClickListener { dragManager.startDrag(Type.EDITTEXT.name, it, placementHint, trashArea) }
+        buttonPalette.setOnLongClickListener { dragManager.startDrag(Type.BUTTON.name, it, placementHint, trashArea) }
+        spinnerPalette.setOnLongClickListener { dragManager.startDrag(Type.SPINNER.name, it, placementHint, trashArea) }
 
         workArea.setOnDragListener(dragManager.dragListener(placementHint, trashArea))
         trashArea.setOnDragListener(dragManager.trashDragListener(trashArea, placementHint))
