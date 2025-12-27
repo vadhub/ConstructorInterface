@@ -17,7 +17,7 @@ class ActionBuilder(
         toastMessage: String? = null,
         dialogTitle: String? = null,
         dialogMessage: String? = null,
-        mathExpression: String? = null,
+        expression: String? = null,
         selectedElementInfo: ElementInfo? = null,
         newText: String? = null
     ): ElementEvent? {
@@ -51,7 +51,7 @@ class ActionBuilder(
             }
 
             ActionType.MATH_OPERATION -> {
-                if (mathExpression.isNullOrEmpty()) {
+                if (expression.isNullOrEmpty()) {
                     Toast.makeText(context, "Введите математическое выражение", Toast.LENGTH_SHORT).show()
                     null
                 } else if (selectedElementInfo == null) {
@@ -59,7 +59,22 @@ class ActionBuilder(
                     null
                 } else {
                     ElementEvent.MathOperation(
-                        expression = mathExpression,
+                        expression = expression,
+                        resultTag = selectedElementInfo.tag
+                    )
+                }
+            }
+
+            ActionType.ADD_TEXT -> {
+                if (expression.isNullOrEmpty()) {
+                    Toast.makeText(context, "Введите текст", Toast.LENGTH_SHORT).show()
+                    null
+                } else if (selectedElementInfo == null) {
+                    Toast.makeText(context, "Выберите элемент для результата", Toast.LENGTH_SHORT).show()
+                    null
+                } else {
+                    ElementEvent.AddText(
+                        newText = expression,
                         resultTag = selectedElementInfo.tag
                     )
                 }

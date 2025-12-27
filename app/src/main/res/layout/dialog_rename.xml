@@ -205,6 +205,41 @@
         android:visibility="gone" />
 
     <TextView
+        android:id="@+id/preview_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Пример: 2 + 3"
+        tools:visibility="visible"
+        android:textColor="#666666"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/addTextLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Запишите текст:"
+        android:textSize="16sp"
+        tools:visibility="visible"
+        android:visibility="gone" />
+
+    <EditText
+        android:id="@+id/_expression"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/edit_text_background"
+        android:hint="Например: Привет"
+        android:inputType="text"
+        android:maxLines="1"
+        android:padding="12dp"
+        tools:visibility="visible"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/labelSaveTo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
@@ -219,17 +254,6 @@
         android:layout_height="wrap_content"
         tools:visibility="visible"
         android:layout_marginBottom="8dp"
-        android:visibility="gone" />
-
-    <TextView
-        android:id="@+id/preview_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Пример: 2 + 3"
-        tools:visibility="visible"
-        android:textColor="#666666"
-        android:textSize="12sp"
         android:visibility="gone" />
 
 </LinearLayout>

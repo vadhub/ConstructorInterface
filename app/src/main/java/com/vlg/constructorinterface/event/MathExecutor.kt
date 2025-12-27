@@ -1,8 +1,21 @@
 package com.vlg.constructorinterface.event
 
+import android.util.Log
+import android.view.View
+import com.vlg.constructorinterface.createui.extractText
 import net.objecthunter.exp4j.ExpressionBuilder
 
 class MathExecutor {
+
+    fun substituteVariables(expression: String, variables: Map<String, View>): String {
+        val regex = Regex("\\b[a-zA-Z][a-zA-Z0-9_]*\\b")
+
+        return regex.replace(expression) { matchResult ->
+            val varName = matchResult.value
+            val view = variables[varName] ?: return@replace varName
+            view.extractText() ?: return@replace varName
+        }
+    }
 
     fun evaluate(
         expression: String,
@@ -18,7 +31,8 @@ class MathExecutor {
         return calculate(expr)
     }
 
-    private fun calculate(expr: String): Double {
+    fun calculate(expr: String): Double {
+        if (expr.isBlank()) return Double.NaN
         val clean = expr.replace("\\s+".toRegex(), "")
         return evaluateExpression(clean)
     }
@@ -29,7 +43,7 @@ class MathExecutor {
             val result = expression.evaluate()
             return result
         } catch (e: Exception) {
-            println("Error evaluating expression: ${e.message}")
+            Log.e("MathExecutor","Error evaluating expression: ${e.message}")
             return Double.NaN
         }
     }

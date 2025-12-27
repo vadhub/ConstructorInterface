@@ -10,6 +10,7 @@ class EventDelegat(private val context: Context) {
     private var deleteEntry: (ElementEvent.DeleteEntry) -> Unit = {}
     private var openTable: (ElementEvent.OpenTable) -> Unit = {}
     private var mathOperation: (ElementEvent.MathOperation) -> Unit = {}
+    private var addText: (ElementEvent.AddText) -> Unit = {}
 
     fun setOnCreateEntry(createEntry: (ElementEvent.CreateEntry) -> Unit) {
         this.createEntry = createEntry
@@ -25,6 +26,10 @@ class EventDelegat(private val context: Context) {
 
     fun setOnMathOperation(mathOperation: (ElementEvent.MathOperation) -> Unit) {
         this.mathOperation = mathOperation
+    }
+
+    fun setOnAddText(addText: (ElementEvent.AddText) -> Unit) {
+        this.addText = addText
     }
 
     fun eventToast(event: ElementEvent.ShowToast) {
@@ -54,5 +59,9 @@ class EventDelegat(private val context: Context) {
 
     fun eventMath(event: ElementEvent.MathOperation) {
         mathOperation.invoke(event)
+    }
+
+    fun eventAddText(event: ElementEvent.AddText) {
+        addText.invoke(event)
     }
 }

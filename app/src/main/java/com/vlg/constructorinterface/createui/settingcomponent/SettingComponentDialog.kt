@@ -109,10 +109,15 @@ class SettingComponentDialog(
                 position: Int,
                 id: Long
             ) {
+                Toast.makeText(context, position.toString(), Toast.LENGTH_SHORT).show()
                 selectedActionType = ActionType.fromPosition(position) ?: ActionType.NONE
+                Toast.makeText(context, selectedActionType.name, Toast.LENGTH_SHORT).show()
                 updateUIForEventType()
             }
 
+            // f07 edit
+            // 138 text
+            // 2dc button
             override fun onNothingSelected(parent: AdapterView<*>?) {
                 selectedActionType = ActionType.NONE
                 updateUIForEventType()
@@ -123,7 +128,7 @@ class SettingComponentDialog(
     private fun updateUIForEventType() {
         eventTypeUIHandler.updateUIForEventType(selectedActionType)
 
-        if (selectedActionType == ActionType.MATH_OPERATION) {
+        if (selectedActionType == ActionType.MATH_OPERATION || selectedActionType == ActionType.ADD_TEXT) {
             elementInfoList = CreatorUI.getElementInfoList()
             eventTypeUIHandler.setupMathSpinner(elementInfoList)
         }
@@ -164,12 +169,13 @@ class SettingComponentDialog(
             Toast.makeText(context, "ID не должно быть пустым", Toast.LENGTH_SHORT).show()
             return false
         }
-        
-        if (tag.length >= 20) {
-            Toast.makeText(context, "ID не должно быть больше 20", Toast.LENGTH_SHORT).show()
+
+        if (tag.length >= 36) {
+            Log.d("!!!", tag)
+            Toast.makeText(context, "ID не должно быть больше 36", Toast.LENGTH_SHORT).show()
             return false
         }
-        
+
         if (tag.contains(' ')) {
             Toast.makeText(context, "ID не должно содержать пробелы", Toast.LENGTH_SHORT).show()
             return false
@@ -211,7 +217,24 @@ class SettingComponentDialog(
                 val selectedElement = elementInfoList[selectedPosition]
                 actionBuilder.buildElementEvent(
                     ActionType.MATH_OPERATION,
-                    mathExpression = expression,
+                    expression = expression,
+                    selectedElementInfo = selectedElement
+                )
+            }
+
+            ActionType.ADD_TEXT -> {
+                val expression = eventTypeUIHandler.getExpression()
+                val selectedPosition = eventTypeUIHandler.getSelectedResultSpinnerPosition()
+
+                if (selectedPosition < 0 || selectedPosition >= elementInfoList.size) {
+                    Toast.makeText(context, "Выберите элемент для результата", Toast.LENGTH_SHORT).show()
+                    return
+                }
+
+                val selectedElement = elementInfoList[selectedPosition]
+                actionBuilder.buildElementEvent(
+                    ActionType.ADD_TEXT,
+                    expression = expression,
                     selectedElementInfo = selectedElement
                 )
             }

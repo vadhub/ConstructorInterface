@@ -30,6 +30,10 @@ class EventTypeUIHandler(
     private lateinit var resultSpinner: Spinner
     private lateinit var previewText: TextView
 
+    private lateinit var addTextLabel: TextView
+    private lateinit var expression: EditText
+    private lateinit var saveToLabel: TextView
+
     fun initViews() {
         dialogTextLabel = rootView.findViewById(R.id.titleTextDialog)
         textEditText = rootView.findViewById(R.id.textEditText)
@@ -45,6 +49,10 @@ class EventTypeUIHandler(
         expressionInput = rootView.findViewById(R.id.math_expression)
         resultSpinner = rootView.findViewById(R.id.result_tag_spinner)
         previewText = rootView.findViewById(R.id.preview_text)
+
+        addTextLabel = rootView.findViewById(R.id.addTextLabel)
+        expression = rootView.findViewById(R.id._expression)
+        saveToLabel = rootView.findViewById(R.id.labelSaveTo)
     }
 
     fun updateUIForEventType(actionType: ActionType) {
@@ -72,15 +80,27 @@ class EventTypeUIHandler(
                 setupMathOperationUI()
             }
 
+            ActionType.ADD_TEXT -> {
+                setupAddTextUI()
+            }
+
             else -> {
                 // Для остальных типов событий не показываем дополнительные поля
             }
         }
     }
 
+    private fun setupAddTextUI() {
+        addTextLabel.visibility = View.VISIBLE
+        expression.visibility = View.VISIBLE
+        saveToLabel.visibility = View.VISIBLE
+        resultSpinner.visibility = View.VISIBLE
+    }
+
     private fun setupMathOperationUI() {
         mathLabel.visibility = View.VISIBLE
         expressionInput.visibility = View.VISIBLE
+        saveToLabel.visibility = View.VISIBLE
         resultSpinner.visibility = View.VISIBLE
         previewText.visibility = View.VISIBLE
     }
@@ -89,6 +109,7 @@ class EventTypeUIHandler(
         mathLabel.visibility = View.GONE
         expressionInput.visibility = View.GONE
         resultSpinner.visibility = View.GONE
+        saveToLabel.visibility = View.GONE
         previewText.visibility = View.GONE
     }
 
@@ -123,6 +144,8 @@ class EventTypeUIHandler(
 
     fun getMathExpression(): String = expressionInput.text.toString()
 
+    fun getExpression(): String = expression.text.toString()
+
     fun getSelectedResultSpinnerPosition(): Int = resultSpinner.selectedItemPosition
 
     fun getToastMessage(): String = textToastEditText.text.toString()
@@ -146,5 +169,9 @@ class EventTypeUIHandler(
         expressionInput.visibility = View.GONE
         resultSpinner.visibility = View.GONE
         previewText.visibility = View.GONE
+
+        addTextLabel.visibility = View.GONE
+        expression.visibility = View.GONE
+        saveToLabel.visibility = View.GONE
     }
 }

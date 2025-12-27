@@ -11,6 +11,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.vlg.constructorinterface.createui.CreatorUI
 import com.vlg.constructorinterface.createui.UIManager
+import com.vlg.constructorinterface.createui.addText
+import com.vlg.constructorinterface.createui.setText
 import com.vlg.constructorinterface.event.ActionExecutor
 import com.vlg.constructorinterface.event.EventDelegat
 import com.vlg.constructorinterface.event.MathExecutor
@@ -69,7 +71,18 @@ class RunFragment : Fragment() {
         eventDelegat.setOnDeleteEntry { }
 
         eventDelegat.setOnMathOperation {
+            Log.d("!!!", "MATH")
+            val substituted = mathExecutor.substituteVariables(it.expression, CreatorUI.getElementsMap())
+            if (Regex("\\b[a-zA-Z][a-zA-Z0-9_]*\\b").containsMatchIn(substituted)) {
+                throw IllegalArgumentException("Unresolved variables in expression: $substituted")
+            }
+            val result = mathExecutor.calculate(substituted)
+            CreatorUI.getElementsMap()[it.resultTag]?.setText(result.toString())
+            Log.d("!!", result.toString())
+        }
 
+        eventDelegat.setOnAddText {
+            CreatorUI.getElementsMap()[it.resultTag]?.addText(it.newText)
         }
 
         eventDelegat.setOnOpenTable {

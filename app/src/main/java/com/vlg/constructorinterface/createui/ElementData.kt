@@ -1,6 +1,11 @@
 package com.vlg.constructorinterface.createui
 
+import android.annotation.SuppressLint
 import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Spinner
+import android.widget.TextView
 import com.google.gson.Gson
 
 data class UiElement(
@@ -62,5 +67,35 @@ object LayoutSerializer {
 
     fun loadLayout(json: String): UiLayout {
         return gson.fromJson(json, UiLayout::class.java)
+    }
+}
+
+
+fun View.extractText(): String? {
+    return when (this) {
+        is TextView -> text.toString()
+        is EditText -> text.toString()
+        is Button -> text.toString()
+        is Spinner -> selectedItem.toString()
+        else -> null
+    }
+}
+
+fun View.setText(string: String) {
+    when (this) {
+        is TextView -> text = string
+        is EditText -> setText(string)
+        is Button -> text = string
+        is Spinner -> {throw IllegalArgumentException("Spinner don`t allow insert text $string") }
+    }
+}
+
+@SuppressLint("SetTextI18n")
+fun View.addText(string: String) {
+    when (this) {
+        is TextView -> text = "${this.text} $string"
+        is EditText -> setText("${this.text} $string")
+        is Button -> text = "${this.text} $string"
+        is Spinner -> {throw IllegalArgumentException("Spinner don`t allow insert text $string") }
     }
 }
