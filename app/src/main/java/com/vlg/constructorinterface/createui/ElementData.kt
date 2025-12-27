@@ -1,5 +1,6 @@
 package com.vlg.constructorinterface.createui
 
+import android.view.View
 import com.google.gson.Gson
 
 data class UiElement(
@@ -10,6 +11,18 @@ data class UiElement(
     val position: Position,
     val size: Size
 )
+
+data class ElementInfo(
+    val tag: String,
+    val displayName: String,
+    val elementType: String,
+    val currentText: String,
+    val view: View? = null
+) {
+    override fun toString(): String {
+        return displayName
+    }
+}
 
 enum class Type(val type: String) {
     TEXTVIEW("TEXTVIEW"),

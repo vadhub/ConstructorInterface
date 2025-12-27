@@ -1,4 +1,4 @@
-package com.vlg.constructorinterface.customview
+package com.vlg.constructorinterface.createui.customview
 
 import android.content.Context
 import androidx.appcompat.widget.AppCompatTextView

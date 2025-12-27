@@ -18,7 +18,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.vlg.constructorinterface.createui.CreatorUI
 import com.vlg.constructorinterface.createui.DragManager
-import com.vlg.constructorinterface.createui.SettingComponentDialog
+import com.vlg.constructorinterface.createui.settingcomponent.SettingComponentDialog
 import com.vlg.constructorinterface.createui.Type
 import com.vlg.constructorinterface.createui.UIManager
 import com.vlg.constructorinterface.table.TableDataManager

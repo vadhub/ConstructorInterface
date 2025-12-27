@@ -12,16 +12,11 @@ sealed class ElementEvent {
     data class GetTextFromEditText(val editTextId: Int) : ElementEvent()
     data class ChangeText(val newText: String) : ElementEvent()
     data class RunCustomCode(val code: String) : ElementEvent()
-    data class MathOperation(val terms: List<Term>, val operationType: OperationType) : ElementEvent() {
-        fun isValid(): Boolean {
-            return terms.isNotEmpty() &&
-                    (operationType != OperationType.DIVISION || terms.all { it.data.toDouble() != 0.0 })
-        }
-    }
-}
-
-enum class OperationType {
-    ADDITION, SUBTRACTION, MULTIPLICATION, DIVISION, POWER
+    data class MathOperation(
+        val expression: String,
+        val resultVar: String? = null,
+        val resultTag: String? = null
+    ) : ElementEvent()
 }
 
 data class ElementAction(
@@ -29,6 +24,22 @@ data class ElementAction(
     val targetId: String = "",
     val description: String = ""
 )
+
+enum class ActionType(val position: Int) {
+    NONE(0),
+    TOAST(1),
+    DIALOG(2),
+    CREATE_ENTRY(3),
+    OPEN_TABLE(4),
+    MATH_OPERATION(5),
+    CHANGE_TEXT(6);
+
+    companion object {
+        fun fromPosition(position: Int): ActionType? {
+            return values().find { it.position == position }
+        }
+    }
+}
 
 fun List<ElementAction>.toJsonArray(): JSONArray {
     return JSONArray().apply {
@@ -86,15 +97,9 @@ fun ElementEvent.toJson(): JSONObject {
             }
             is ElementEvent.MathOperation -> {
                 put("type", "MathOperation")
-                put("terms", JSONArray().apply {
-                    terms.forEach { term ->
-                        put(JSONObject().apply {
-                            put("isConst", term.isConst)
-                            put("data", term.data)
-                        })
-                    }
-                })
-                put("operationType", operationType.name)
+                put("expression", expression)
+                put("resultVar", resultVar)
+                put("resultTag", resultTag)
             }
         }
     }
@@ -160,16 +165,10 @@ fun JSONObject.toElementEvent(): ElementEvent {
             ElementEvent.RunCustomCode(code)
         }
         "MathOperation" -> {
-            val termsJson = getJSONArray("terms")
-            val terms = mutableListOf<Term>()
-            for (i in 0 until termsJson.length()) {
-                val termJson = termsJson.getJSONObject(i)
-                val isConst = termJson.getBoolean("isConst")
-                val data = termJson.get("data")
-                terms.add(Term(isConst, data as Number))
-            }
-            val operationType = OperationType.valueOf(getString("operationType"))
-            ElementEvent.MathOperation(terms, operationType)
+            val expression = getString("expression")
+            val resultTag = getString("resultTag")
+            val resultVar = getString("resultVar")
+            ElementEvent.MathOperation(expression, resultVar, resultTag)
         }
         else -> throw IllegalArgumentException("Unknown event type: $type")
     }

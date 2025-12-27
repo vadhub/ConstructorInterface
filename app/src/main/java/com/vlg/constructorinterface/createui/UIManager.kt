@@ -11,7 +11,7 @@ import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.core.view.isEmpty
-import com.vlg.constructorinterface.customview.FakeSpinner
+import com.vlg.constructorinterface.createui.customview.FakeSpinner
 import com.vlg.constructorinterface.event.ActionExecutor
 import com.vlg.constructorinterface.event.ElementAction
 import com.vlg.constructorinterface.event.ElementEvent

@@ -8,7 +8,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -19,7 +18,8 @@ import android.widget.Toast
 import androidx.core.graphics.toColorInt
 import androidx.core.view.isEmpty
 import com.vlg.constructorinterface.R
-import com.vlg.constructorinterface.customview.FakeSpinner
+import com.vlg.constructorinterface.createui.customview.FakeSpinner
+import com.vlg.constructorinterface.createui.settingcomponent.SettingComponentDialog
 import com.vlg.constructorinterface.event.ElementAction
 import java.util.UUID
 
@@ -34,10 +34,54 @@ class CreatorUI(
     private var lastClickedView: View? = null
     private var elementCounter = 1
     private var currentHighlightedRow: LinearLayout? = null
-    private val elementsMap = mutableMapOf<String, View>()
     private val actions: MutableMap<String, ElementAction> = mutableMapOf() // tag -> EventAction
 
     companion object {
+        private val elementsMap = mutableMapOf<String, View>()
+
+        fun getElementInfoList(): List<ElementInfo> {
+            return elementsMap.mapNotNull { (tag, view) ->
+                when (view) {
+                    is TextView -> {
+                        val displayText = if (view is Button)
+                            "Кнопка: ${view.text}"
+                        else
+                            "Текст: ${view.text}"
+                        ElementInfo(
+                            tag = tag,
+                            displayName = "$displayText (тег: $tag)",
+                            elementType = if (view is Button) "BUTTON" else "TEXTVIEW",
+                            currentText = view.text.toString(),
+                            view = view
+                        )
+                    }
+
+                    is EditText -> {
+                        ElementInfo(
+                            tag = tag,
+                            displayName = "Поле: ${view.hint ?: "Без заголовка"} (тег: $tag)",
+                            elementType = "EDITTEXT",
+                            currentText = view.text.toString(),
+                            view = view
+                        )
+                    }
+
+                    is FakeSpinner -> {
+                        ElementInfo(
+                            tag = tag,
+                            displayName = "Поле: ${view.hint ?: "Без заголовка"} (тег: $tag)",
+                            elementType = "SPINNER",
+                            currentText = view.text.toString(),
+                            view = view
+                        )
+                    }
+
+                    else -> null
+                }
+            }
+        }
+
+        fun getElementsMap() = elementsMap
         fun createAdapterSpinner(context: Context, text: String): ArrayAdapter<String> {
             val listOf = text.split(",")
             val adapterList = ArrayAdapter(
@@ -244,11 +288,13 @@ class CreatorUI(
         } else {
             if (row.childCount < 4) {
                 row.setBackgroundColor("#E3F2FD".toColorInt())
-                placementHint.text = "Нижняя половина: элемент добавится в строку (${row.childCount}/4)"
+                placementHint.text =
+                    "Нижняя половина: элемент добавится в строку (${row.childCount}/4)"
                 Log.d("DragDebug", "Bottom half of row, can add (${row.childCount}/4)")
             } else {
                 row.setBackgroundColor("#FFCDD2".toColorInt())
-                placementHint.text = "Строка заполнена (4/4). Отпустите для создания новой строки ниже"
+                placementHint.text =
+                    "Строка заполнена (4/4). Отпустите для создания новой строки ниже"
                 Log.d("DragDebug", "Row is full (4/4)")
             }
         }
@@ -331,7 +377,10 @@ class CreatorUI(
     }
 
     fun addElementToWorkArea(workArea: LinearLayout, element: View, x: Float, y: Float) {
-        Log.d("DragDebug", "addElementToWorkArea: x=$x, y=$y, workArea child count=${workArea.childCount}")
+        Log.d(
+            "DragDebug",
+            "addElementToWorkArea: x=$x, y=$y, workArea child count=${workArea.childCount}"
+        )
 
         if (workArea.childCount == 1 && workArea.getChildAt(0) is TextView) {
             val hintView = workArea.getChildAt(0) as TextView
@@ -355,7 +404,10 @@ class CreatorUI(
                 if (y >= top && y <= bottom) {
                     targetRow = child
                     rowIndex = i
-                    Log.d("DragDebug", "Found target row at index $i with ${child.childCount} children")
+                    Log.d(
+                        "DragDebug",
+                        "Found target row at index $i with ${child.childCount} children"
+                    )
                     break
                 }
             }
@@ -371,7 +423,10 @@ class CreatorUI(
                 Log.d("DragDebug", "Top half - creating new row above")
                 createNewRowAbove(workArea, element, rowIndex)
             } else {
-                Log.d("DragDebug", "Bottom half - adding to existing row with ${targetRow.childCount} children")
+                Log.d(
+                    "DragDebug",
+                    "Bottom half - adding to existing row with ${targetRow.childCount} children"
+                )
                 addToExistingRow(workArea, targetRow, element)
             }
         } else {

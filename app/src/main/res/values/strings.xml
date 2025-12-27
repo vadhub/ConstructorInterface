@@ -8,5 +8,7 @@
         <item>dialog</item>
         <item>write</item>
         <item>open_table</item>
+        <item>change_text</item>
+        <item>math_operation</item>
     </string-array>
 </resources>

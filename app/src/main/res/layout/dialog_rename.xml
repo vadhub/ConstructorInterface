@@ -152,4 +152,55 @@
         android:visibility="gone"
         tools:visibility="visible" />
 
+    <TextView
+        android:id="@+id/mathLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Математическое выражение:"
+        android:textSize="16sp"
+        tools:visibility="visible"
+        android:visibility="gone" />
+
+    <EditText
+        android:id="@+id/math_expression"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/edit_text_background"
+        android:hint="Например: a + b или 2 * 3"
+        android:inputType="text"
+        android:maxLines="1"
+        android:padding="12dp"
+        tools:visibility="visible"
+        android:visibility="gone" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Результат сохранить в:"
+        android:textSize="16sp"
+        tools:visibility="visible"
+        android:visibility="gone" />
+
+    <Spinner
+        android:id="@+id/result_tag_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:visibility="visible"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/preview_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Пример: 2 + 3"
+        tools:visibility="visible"
+        android:textColor="#666666"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
 </LinearLayout>
