@@ -13,6 +13,7 @@ import com.vlg.constructorinterface.createui.CreatorUI
 import com.vlg.constructorinterface.createui.UIManager
 import com.vlg.constructorinterface.event.ActionExecutor
 import com.vlg.constructorinterface.event.EventDelegat
+import com.vlg.constructorinterface.event.MathExecutor
 import com.vlg.constructorinterface.table.TableDataManager
 import com.vlg.constructorinterface.table.TableSchema
 import kotlin.random.Random
@@ -51,6 +52,8 @@ class RunFragment : Fragment() {
         eventDelegat = EventDelegat(view.context)
         executor = ActionExecutor(eventDelegat)
 
+        val mathExecutor = MathExecutor()
+
         eventDelegat.setOnCreateEntry {
             Log.d("!!!setOnCreateEntry", "start save")
             val values = mutableMapOf<String, String>()
@@ -64,6 +67,10 @@ class RunFragment : Fragment() {
         }
 
         eventDelegat.setOnDeleteEntry { }
+
+        eventDelegat.setOnMathOperation {
+
+        }
 
         eventDelegat.setOnOpenTable {
             val fragment = TableDataFragment()

@@ -18,7 +18,6 @@ import com.vlg.constructorinterface.createui.ElementInfo
 import com.vlg.constructorinterface.createui.customview.FakeSpinner
 import com.vlg.constructorinterface.event.ActionType
 import com.vlg.constructorinterface.event.ElementAction
-import com.vlg.constructorinterface.event.ElementEvent
 import com.vlg.constructorinterface.table.TableDataManager
 
 class SettingComponentDialog(
@@ -26,6 +25,8 @@ class SettingComponentDialog(
     private val tableDataManager: TableDataManager
 ) {
 
+    private lateinit var idEditText: EditText
+    private lateinit var charIDCount: TextView
     private lateinit var editText: EditText
     private lateinit var charCount: TextView
     private lateinit var eventTypeSpinner: Spinner
@@ -36,8 +37,6 @@ class SettingComponentDialog(
     private lateinit var componentTextUpdater: ComponentTextUpdater
 
     private var selectedActionType: ActionType = ActionType.NONE
-    private var currentView: View? = null
-    private var currentActions: MutableMap<String, ElementAction>? = null
     private var elementInfoList: List<ElementInfo> = emptyList()
 
     fun showDialog(
@@ -45,8 +44,6 @@ class SettingComponentDialog(
         view: View,
         actions: MutableMap<String, ElementAction>
     ) {
-        currentView = view
-        currentActions = actions
 
         val currentText = when (view) {
             is TextView -> view.text.toString()
@@ -71,7 +68,9 @@ class SettingComponentDialog(
 
         // Настройка текстового поля
         textInputManager.setupTextWatchers(editText, charCount, currentText)
+        textInputManager.setupTextWatchers(idEditText, charIDCount, view.tag.toString())
         charCount.text = textInputManager.getCurrentCharCountText(currentText)
+        charIDCount.text = textInputManager.getCurrentCharCountText(currentText, 20)
 
         val dialog = AlertDialog.Builder(context)
             .setTitle("Настройка компонента")
@@ -83,10 +82,12 @@ class SettingComponentDialog(
             .create()
 
         dialog.show()
-        editText.requestFocus()
+        idEditText.requestFocus()
     }
 
     private fun initViews(view: View) {
+        idEditText = view.findViewById(R.id.renameIDEditText)
+        charIDCount = view.findViewById(R.id.charIDCount)
         editText = view.findViewById(R.id.renameEditText)
         charCount = view.findViewById(R.id.charCount)
         eventTypeSpinner = view.findViewById(R.id.eventTypeSpinner)
@@ -143,8 +144,11 @@ class SettingComponentDialog(
 
     private fun handleSave(view: View, actions: MutableMap<String, ElementAction>) {
         val newText = editText.text.toString().trim()
+        val newId = idEditText.text.toString().trim()
 
-        // Обновление текста компонента
+        if (!isValidTag(newId)) return
+
+        componentTextUpdater.updateComponentID(view, newId, actions)
         componentTextUpdater.updateComponentText(view, newText)
 
         // Установка действия
@@ -152,6 +156,26 @@ class SettingComponentDialog(
             setUpAction(view, actions)
             Toast.makeText(context, "Событие установлено", Toast.LENGTH_SHORT).show()
         }
+    }
+
+
+    fun isValidTag(tag: String?): Boolean {
+        if (tag.isNullOrEmpty()) {
+            Toast.makeText(context, "ID не должно быть пустым", Toast.LENGTH_SHORT).show()
+            return false
+        }
+        
+        if (tag.length >= 20) {
+            Toast.makeText(context, "ID не должно быть больше 20", Toast.LENGTH_SHORT).show()
+            return false
+        }
+        
+        if (tag.contains(' ')) {
+            Toast.makeText(context, "ID не должно содержать пробелы", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        return true
     }
 
     private fun setUpAction(view: View, actions: MutableMap<String, ElementAction>) {
