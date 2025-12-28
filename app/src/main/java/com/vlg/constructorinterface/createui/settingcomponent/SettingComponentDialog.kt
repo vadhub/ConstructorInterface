@@ -115,9 +115,6 @@ class SettingComponentDialog(
                 updateUIForEventType()
             }
 
-            // f07 edit
-            // 138 text
-            // 2dc button
             override fun onNothingSelected(parent: AdapterView<*>?) {
                 selectedActionType = ActionType.NONE
                 updateUIForEventType()
@@ -170,9 +167,9 @@ class SettingComponentDialog(
             return false
         }
 
-        if (tag.length >= 36) {
+        if (tag.length >= 40) {
             Log.d("!!!", tag)
-            Toast.makeText(context, "ID не должно быть больше 36", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "ID не должно быть больше 40", Toast.LENGTH_SHORT).show()
             return false
         }
 

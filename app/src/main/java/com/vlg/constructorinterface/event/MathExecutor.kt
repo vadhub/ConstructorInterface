@@ -7,7 +7,7 @@ import net.objecthunter.exp4j.ExpressionBuilder
 
 class MathExecutor {
 
-    fun substituteVariables(expression: String, variables: Map<String, View>): String {
+    fun substituteVariablesView(expression: String, variables: Map<String, View>): String {
         val regex = Regex("\\b[a-zA-Z][a-zA-Z0-9_]*\\b")
 
         return regex.replace(expression) { matchResult ->
