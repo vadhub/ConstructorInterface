@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.vlg.constructorinterface.createui.CreatorUI
 import com.vlg.constructorinterface.createui.UIManager
@@ -51,34 +52,44 @@ class RunFragment : Fragment() {
         workArea = view.findViewById(R.id.workArea)
         creatorUI = CreatorUI(view.context, layoutInflater)
         uiManager = UIManager(view.context, creatorUI)
-        eventDelegat = EventDelegat(view.context)
+        eventDelegat = EventDelegat()
         executor = ActionExecutor(eventDelegat)
 
         val mathExecutor = MathExecutor()
 
+        eventDelegat.setOnShowToast {
+            val substituted = mathExecutor.substituteVariablesView(it.message, CreatorUI.getElementsMap())
+            Toast.makeText(view.context, substituted, Toast.LENGTH_SHORT)
+                .show()
+        }
+
+        eventDelegat.setOnShowDialog {
+            val substitutedTitle = mathExecutor.substituteVariablesView(it.title, CreatorUI.getElementsMap())
+            val substitutedMessage = mathExecutor.substituteVariablesView(it.message, CreatorUI.getElementsMap())
+            AlertDialog.Builder(view.context)
+                .setTitle(substitutedTitle)
+                .setMessage(substitutedMessage)
+                .setPositiveButton("OK", null)
+                .show()
+        }
+
         eventDelegat.setOnCreateEntry {
-            Log.d("!!!setOnCreateEntry", "start save")
             val values = mutableMapOf<String, String>()
             uiManager.getListOfEditTexts().forEach { values.put(it.tag.toString(), it.text.toString()) }
             uiManager.getListOfSpinners().forEach { values.put(it.tag.toString(), it.selectedItem.toString()) }
             val uid = Random.nextInt(1000000000) + Random.nextInt(100000000)
-            Log.d("!!!setOnCreateEntry", "$uid $values")
-            val success1 = tableDataManager.saveTableSchema(tableDataManager.addNewRow(schema, uid, values))
-
-            Log.d("!!!setOnCreateEntry", "end save $success1")
+            tableDataManager.saveTableSchema(tableDataManager.addNewRow(schema, uid, values))
         }
 
         eventDelegat.setOnDeleteEntry { }
 
         eventDelegat.setOnMathOperation {
-            Log.d("!!!", "MATH")
             val substituted = mathExecutor.substituteVariablesView(it.expression, CreatorUI.getElementsMap())
             if (Regex("\\b[a-zA-Z][a-zA-Z0-9_]*\\b").containsMatchIn(substituted)) {
                 throw IllegalArgumentException("Unresolved variables in expression: $substituted")
             }
             val result = mathExecutor.calculate(substituted)
             CreatorUI.getElementsMap()[it.resultTag]?.setText(result.toString())
-            Log.d("!!", result.toString())
         }
 
         eventDelegat.setOnAddText {

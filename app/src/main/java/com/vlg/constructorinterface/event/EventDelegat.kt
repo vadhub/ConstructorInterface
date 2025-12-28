@@ -1,16 +1,14 @@
 package com.vlg.constructorinterface.event
 
-import android.content.Context
-import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
-
-class EventDelegat(private val context: Context) {
+class EventDelegat() {
 
     private var createEntry: (ElementEvent.CreateEntry) -> Unit = {}
     private var deleteEntry: (ElementEvent.DeleteEntry) -> Unit = {}
     private var openTable: (ElementEvent.OpenTable) -> Unit = {}
     private var mathOperation: (ElementEvent.MathOperation) -> Unit = {}
     private var addText: (ElementEvent.AddText) -> Unit = {}
+    private var toastEvent: (ElementEvent.ShowToast) -> Unit = {}
+    private var dialogEvent: (ElementEvent.ShowDialog) -> Unit = {}
 
     fun setOnCreateEntry(createEntry: (ElementEvent.CreateEntry) -> Unit) {
         this.createEntry = createEntry
@@ -32,17 +30,20 @@ class EventDelegat(private val context: Context) {
         this.addText = addText
     }
 
+    fun setOnShowToast(showToast: (ElementEvent.ShowToast) -> Unit) {
+        this.toastEvent = showToast
+    }
+
+    fun setOnShowDialog(showDialog: (ElementEvent.ShowDialog) -> Unit) {
+        this.dialogEvent = showDialog
+    }
+
     fun eventToast(event: ElementEvent.ShowToast) {
-        Toast.makeText(context, event.message, Toast.LENGTH_SHORT)
-            .show()
+        toastEvent.invoke(event)
     }
 
     fun eventDialog(event: ElementEvent.ShowDialog) {
-        AlertDialog.Builder(context)
-            .setTitle(event.title)
-            .setMessage(event.message)
-            .setPositiveButton("OK", null)
-            .show()
+        dialogEvent.invoke(event)
     }
 
     fun eventCreateEntry(event: ElementEvent.CreateEntry) {

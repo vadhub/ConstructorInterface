@@ -109,9 +109,7 @@ class SettingComponentDialog(
                 position: Int,
                 id: Long
             ) {
-                Toast.makeText(context, position.toString(), Toast.LENGTH_SHORT).show()
                 selectedActionType = ActionType.fromPosition(position) ?: ActionType.NONE
-                Toast.makeText(context, selectedActionType.name, Toast.LENGTH_SHORT).show()
                 updateUIForEventType()
             }
 
@@ -168,7 +166,6 @@ class SettingComponentDialog(
         }
 
         if (tag.length >= 40) {
-            Log.d("!!!", tag)
             Toast.makeText(context, "ID не должно быть больше 40", Toast.LENGTH_SHORT).show()
             return false
         }
