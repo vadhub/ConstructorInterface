@@ -42,20 +42,6 @@ class CreatorUI(
         fun getElementInfoList(): List<ElementInfo> {
             return elementsMap.mapNotNull { (tag, view) ->
                 when (view) {
-                    is TextView -> {
-                        val displayText = if (view is Button)
-                            "Кнопка: ${view.text}"
-                        else
-                            "Текст: ${view.text}"
-                        ElementInfo(
-                            tag = tag,
-                            displayName = "$displayText (тег: $tag)",
-                            elementType = if (view is Button) "BUTTON" else "TEXTVIEW",
-                            currentText = view.text.toString(),
-                            view = view
-                        )
-                    }
-
                     is EditText -> {
                         ElementInfo(
                             tag = tag,
@@ -71,6 +57,20 @@ class CreatorUI(
                             tag = tag,
                             displayName = "Поле: ${view.hint ?: "Без заголовка"} (тег: $tag)",
                             elementType = "SPINNER",
+                            currentText = view.text.toString(),
+                            view = view
+                        )
+                    }
+
+                    is TextView -> {
+                        val displayText = if (view is Button)
+                            "Кнопка: ${view.text}"
+                        else
+                            "Текст: ${view.text}"
+                        ElementInfo(
+                            tag = tag,
+                            displayName = "$displayText (тег: $tag)",
+                            elementType = if (view is Button) "BUTTON" else "TEXTVIEW",
                             currentText = view.text.toString(),
                             view = view
                         )

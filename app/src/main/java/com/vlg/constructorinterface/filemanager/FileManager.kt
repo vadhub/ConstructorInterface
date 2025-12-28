@@ -1,21 +1,40 @@
 package com.vlg.constructorinterface.filemanager
 
 import android.content.Context
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
+import java.io.*
 import java.nio.charset.Charset
 
 object FileManager {
-    fun saveToFile(context: Context, fileName: String, content: String) {
-        val file = File(context.filesDir, fileName)
+    fun saveToFile(
+        context: Context,
+        fileName: String,
+        content: String,
+        subDirectory: String? = null
+    ) {
+        val targetDir = if (subDirectory != null) {
+            File(context.filesDir, subDirectory).apply { mkdirs() }
+        } else {
+            context.filesDir
+        }
+
+        val file = File(targetDir, fileName)
         FileOutputStream(file).use { outputStream ->
             outputStream.write(content.toByteArray(Charset.forName("UTF-8")))
         }
     }
 
-    fun loadFromFile(context: Context, fileName: String): String? {
-        val file = File(context.filesDir, fileName)
+    fun loadFromFile(
+        context: Context,
+        fileName: String,
+        subDirectory: String? = null
+    ): String? {
+        val targetDir = if (subDirectory != null) {
+            File(context.filesDir, subDirectory)
+        } else {
+            context.filesDir
+        }
+
+        val file = File(targetDir, fileName)
         if (!file.exists()) return null
 
         FileInputStream(file).use { inputStream ->
