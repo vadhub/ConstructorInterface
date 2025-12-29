@@ -33,6 +33,9 @@ class ConstructorFragment : Fragment() {
     private lateinit var navigator: Navigator
     private lateinit var tableDataManager: TableDataManager
 
+    private val projectPath by lazy { arguments?.getString("PROJECT_PATH") }
+    private val projectName by lazy { arguments?.getString("PROJECT_NAME") }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         mContext = context
@@ -62,7 +65,7 @@ class ConstructorFragment : Fragment() {
 
         creatorUI = CreatorUI(view.context, layoutInflater, SettingComponentDialog(view.context, tableDataManager))
         val dragManager = DragManager(workArea, requireActivity(), creatorUI)
-        uiManager = UIManager(view.context, creatorUI)
+        uiManager = UIManager(view.context, creatorUI, projectPath ?: "")
 
         textViewPalette.setOnLongClickListener { dragManager.startDrag(Type.TEXTVIEW.name, it, placementHint, trashArea) }
         editTextPalette.setOnLongClickListener { dragManager.startDrag(Type.EDITTEXT.name, it, placementHint, trashArea) }

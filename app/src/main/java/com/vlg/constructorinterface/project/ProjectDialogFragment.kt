@@ -60,7 +60,8 @@ class ProjectDialogFragment : DialogFragment() {
         val dialog = Dialog(requireContext())
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
 
-        val inflater = requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val inflater =
+            requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val view = inflater.inflate(R.layout.dialog_project, null)
 
         setupViews(view)
@@ -92,7 +93,7 @@ class ProjectDialogFragment : DialogFragment() {
 
         buttonAction.setOnClickListener {
             val name = editTextName.text.toString().trim()
-            val path = System.currentTimeMillis().toString()+"cr"
+            val path = System.currentTimeMillis().toString() + "cr"
 
             if (name.isEmpty()) {
                 editTextName.error = "Введите название проекта"
@@ -115,10 +116,7 @@ class ProjectDialogFragment : DialogFragment() {
                     createdAt = System.currentTimeMillis()
                 )
             } else {
-                Project(
-                    name = name,
-                    path = path,
-                )
+                Project(name = name, path = path)
             }
 
             listener?.onProjectCreated(project)

@@ -11,7 +11,8 @@ class ProjectAdapter(
     private val projects: MutableList<Project>,
     private val onProjectClick: (Project) -> Unit,
     private val onProjectDelete: (Project) -> Unit,
-    private val onProjectEdit: (Project) -> Unit
+    private val onProjectEdit: (Project) -> Unit,
+    private val onOpenProject: (Project) -> Unit
 ) : RecyclerView.Adapter<ProjectAdapter.ProjectViewHolder>() {
 
     class ProjectViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -50,6 +51,10 @@ class ProjectAdapter(
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                R.id.menu_edit_project -> {
+                    onOpenProject.invoke(project)
+                    true
+                }
                 R.id.menu_edit -> {
                     onProjectEdit(project)
                     true

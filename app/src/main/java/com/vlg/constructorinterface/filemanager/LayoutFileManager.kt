@@ -14,7 +14,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class LayoutFileManager(private val context: Context) {
+class LayoutFileManager(private val context: Context, private val folderProject: String) {
 
     companion object {
         private const val LAYOUT_FILE_NAME = "saved_layout.json"
@@ -25,7 +25,7 @@ class LayoutFileManager(private val context: Context) {
 
     fun saveLayoutToFile(json: String): Boolean {
         return try {
-            FileManager.saveToFile(context,LAYOUT_FILE_NAME, json)
+            FileManager.saveToFile(context,LAYOUT_FILE_NAME, json, folderProject)
             true
         } catch (e: Exception) {
             Log.e("LayoutFileManager", "Error saving layout to file", e)
@@ -35,7 +35,7 @@ class LayoutFileManager(private val context: Context) {
 
     fun saveActionsToFile(json: String): Boolean {
         return try {
-            FileManager.saveToFile(context,ACTIONS_FILE_NAME, json)
+            FileManager.saveToFile(context,ACTIONS_FILE_NAME, json, folderProject)
             true
         } catch (e: Exception) {
             Log.e("LayoutFileManager", "Error saving action to file", e)
@@ -45,7 +45,7 @@ class LayoutFileManager(private val context: Context) {
 
     fun loadActionsFromFile(): MutableMap<String, ElementAction> {
         return try {
-            val jsonString = FileManager.loadFromFile(context, ACTIONS_FILE_NAME)
+            val jsonString = FileManager.loadFromFile(context, ACTIONS_FILE_NAME, folderProject)
             val jsonArray = JSONArray(jsonString)
             Log.d("LayoutFileManager", "loadActionsFromFile $jsonArray")
             jsonArray.toElementActionList().associateBy { it.targetId }.toMutableMap()
@@ -57,7 +57,7 @@ class LayoutFileManager(private val context: Context) {
 
     fun loadLayoutFromFile(): String? {
         return try {
-            FileManager.loadFromFile(context,LAYOUT_FILE_NAME)
+            FileManager.loadFromFile(context,LAYOUT_FILE_NAME, folderProject)
         } catch (e: Exception) {
             Log.e("LayoutFileManager", "Error loading layout from file", e)
             null
@@ -66,7 +66,7 @@ class LayoutFileManager(private val context: Context) {
 
     fun saveCounterToFile(counter: Int): Boolean {
         return try {
-            FileManager.saveToFile(context,COUNTER_FILE_NAME, counter.toString())
+            FileManager.saveToFile(context,COUNTER_FILE_NAME, counter.toString(), folderProject)
             true
         } catch (e: Exception) {
             Log.e("LayoutFileManager", "Error saving counter to file", e)
@@ -76,7 +76,7 @@ class LayoutFileManager(private val context: Context) {
 
     fun loadCounterFromFile(): Int {
         return try {
-            val content = FileManager.loadFromFile(context,COUNTER_FILE_NAME)
+            val content = FileManager.loadFromFile(context,COUNTER_FILE_NAME, folderProject)
             content?.toIntOrNull() ?: 1
         } catch (e: Exception) {
             Log.e("LayoutFileManager", "Error loading counter from file", e)
@@ -258,7 +258,7 @@ class LayoutFileManager(private val context: Context) {
     }
 
     private fun deleteFile(fileName: String): Boolean {
-        val file = File(context.filesDir, fileName)
+        val file = File(context.filesDir, folderProject + File.separator + fileName)
         return if (file.exists()) {
             file.delete()
         } else {

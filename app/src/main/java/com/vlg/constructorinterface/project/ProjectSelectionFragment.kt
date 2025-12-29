@@ -1,5 +1,6 @@
 package com.vlg.constructorinterface.project
 
+import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,7 +17,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.vlg.constructorinterface.ConstructorFragment
+import com.vlg.constructorinterface.Navigator
 import com.vlg.constructorinterface.R
+import com.vlg.constructorinterface.RunFragment
 import java.io.File
 
 class ProjectSelectionFragment : Fragment() {
@@ -31,7 +35,13 @@ class ProjectSelectionFragment : Fragment() {
     private lateinit var projectAdapter: ProjectAdapter
     private val projectList = mutableListOf<Project>()
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var navigator: Navigator
     private val gson = Gson()
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        navigator = context as Navigator
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -72,6 +82,9 @@ class ProjectSelectionFragment : Fragment() {
             },
             onProjectEdit = { project ->
                 showEditProjectDialog(project)
+            },
+            onOpenProject = {project ->
+                onOpenProjectForEdit(project)
             }
         )
 
@@ -194,12 +207,24 @@ class ProjectSelectionFragment : Fragment() {
             putString("current_project", gson.toJson(project))
         }
 
-        // Сообщаем Activity о выборе проекта
-        val listener = activity as? OnProjectSelectedListener
-        listener?.onProjectSelected(project)
+        val fragment = RunFragment()
+        val bundle = Bundle()
+        bundle.putString("PROJECT_PATH", project.path)
+        bundle.putString("PROJECT_NAME", project.name)
+        fragment.arguments = bundle
+        navigator.startFragment(fragment)
     }
 
-    interface OnProjectSelectedListener {
-        fun onProjectSelected(project: Project)
+    private fun onOpenProjectForEdit(project: Project) {
+        sharedPreferences.edit {
+            putString("current_project", gson.toJson(project))
+        }
+
+        val fragment = ConstructorFragment()
+        val bundle = Bundle()
+        bundle.putString("PROJECT_PATH", project.path)
+        bundle.putString("PROJECT_NAME", project.name)
+        fragment.arguments = bundle
+        navigator.startFragment(fragment)
     }
 }

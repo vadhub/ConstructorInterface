@@ -32,6 +32,9 @@ class RunFragment : Fragment() {
     private var schema: TableSchema? = null
     private lateinit var navigator: Navigator
 
+    private val projectPath by lazy { arguments?.getString("PROJECT_PATH") }
+    private val projectName by lazy { arguments?.getString("PROJECT_NAME") }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         navigator = context as Navigator
@@ -51,7 +54,7 @@ class RunFragment : Fragment() {
 
         workArea = view.findViewById(R.id.workArea)
         creatorUI = CreatorUI(view.context, layoutInflater)
-        uiManager = UIManager(view.context, creatorUI)
+        uiManager = UIManager(view.context, creatorUI, projectPath ?: "")
         eventDelegat = EventDelegat()
         executor = ActionExecutor(eventDelegat)
 
