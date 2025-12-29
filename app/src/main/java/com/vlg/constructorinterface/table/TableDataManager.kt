@@ -8,7 +8,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.vlg.constructorinterface.filemanager.FileManager
 
-class TableDataManager(private val context: Context) {
+class TableDataManager(private val context: Context, private val folderProject: String) {
 
     companion object {
         private const val TABLE_DATA_FILE = "table_data.json"
@@ -88,7 +88,7 @@ class TableDataManager(private val context: Context) {
     fun saveTableSchema(schema: TableSchema): Boolean {
         return try {
             val json = gson.toJson(schema)
-            FileManager.saveToFile(context, TABLE_DATA_FILE, json)
+            FileManager.saveToFile(context, TABLE_DATA_FILE, json, folderProject)
             Log.d("TableData", "Схема сохранена: ${schema.columns.size} столбцов, ${schema.rows.size} строк")
             true
         } catch (e: Exception) {
@@ -100,7 +100,7 @@ class TableDataManager(private val context: Context) {
     // Загрузка структуры таблицы
     fun loadTableSchema(): TableSchema? {
         return try {
-            val json = FileManager.loadFromFile(context, TABLE_DATA_FILE)
+            val json = FileManager.loadFromFile(context, TABLE_DATA_FILE, folderProject)
             if (json.isNullOrEmpty()) return null
 
             val type = object : TypeToken<TableSchema>() {}.type

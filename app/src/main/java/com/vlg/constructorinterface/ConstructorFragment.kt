@@ -15,12 +15,14 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import com.vlg.constructorinterface.createui.CreatorUI
 import com.vlg.constructorinterface.createui.DragManager
 import com.vlg.constructorinterface.createui.settingcomponent.SettingComponentDialog
 import com.vlg.constructorinterface.createui.Type
 import com.vlg.constructorinterface.createui.UIManager
+import com.vlg.constructorinterface.project.Project
 import com.vlg.constructorinterface.table.TableDataManager
 
 class ConstructorFragment : Fragment() {
@@ -56,7 +58,7 @@ class ConstructorFragment : Fragment() {
         workArea = view.findViewById(R.id.workArea)
         placementHint = view.findViewById(R.id.placementHint)
         trashArea = view.findViewById(R.id.trashArea)
-        tableDataManager = TableDataManager(mContext)
+        tableDataManager = TableDataManager(mContext, projectPath ?: "")
 
         val textViewPalette = view.findViewById<LinearLayout>(R.id.textViewPalette)
         val editTextPalette = view.findViewById<LinearLayout>(R.id.editTextPalette)
@@ -74,6 +76,11 @@ class ConstructorFragment : Fragment() {
 
         workArea.setOnDragListener(dragManager.dragListener(placementHint, trashArea))
         trashArea.setOnDragListener(dragManager.trashDragListener(trashArea, placementHint))
+
+        projectPath?.let {
+            loadSavedLayout()
+        }
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -93,7 +100,7 @@ class ConstructorFragment : Fragment() {
                 true
             }
             R.id.menu_run -> {
-                navigator.startFragment(RunFragment())
+                runProject()
                 true
             }
             R.id.menu_export -> {
@@ -129,6 +136,16 @@ class ConstructorFragment : Fragment() {
     }
 
     // ========== ФУНКЦИИ ДЛЯ СОХРАНЕНИЯ И ЗАГРУЗКИ ==========
+
+    private fun runProject() {
+        val fragment = RunFragment()
+        val bundle = Bundle()
+        bundle.putString("PROJECT_PATH", projectPath)
+        bundle.putString("PROJECT_NAME", projectName)
+        fragment.arguments = bundle
+        navigator.startFragment(fragment)
+    }
+
 
     private fun saveCurrentLayout() {
         val success = uiManager.saveLayoutToFile(workArea, creatorUI.getElementCounter())

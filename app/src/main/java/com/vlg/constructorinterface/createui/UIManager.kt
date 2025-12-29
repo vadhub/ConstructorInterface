@@ -18,7 +18,7 @@ import com.vlg.constructorinterface.event.ElementEvent
 import com.vlg.constructorinterface.filemanager.LayoutFileManager
 import com.vlg.constructorinterface.event.toJsonArray
 
-class UIManager(private val context: Context, private val creatorUI: CreatorUI, private val folderProject: String) {
+class UIManager(private val context: Context, private val creatorUI: CreatorUI, folderProject: String) {
 
     private var layoutFileManager: LayoutFileManager = LayoutFileManager(context, folderProject)
     private val listOfEditTexts: MutableList<EditText> = mutableListOf()

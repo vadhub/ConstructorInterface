@@ -3,6 +3,7 @@ package com.vlg.constructorinterface.project
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,7 +31,6 @@ class ProjectSelectionFragment : Fragment() {
     private lateinit var textEmptyMessage: TextView
     private lateinit var buttonCreateNew: Button
     private lateinit var fabAddProject: FloatingActionButton
-    private lateinit var progressBar: ProgressBar
 
     private lateinit var projectAdapter: ProjectAdapter
     private val projectList = mutableListOf<Project>()
@@ -100,7 +100,6 @@ class ProjectSelectionFragment : Fragment() {
     }
 
     private fun loadProjects() {
-        progressBar.visibility = View.VISIBLE
 
         // Имитация загрузки (можно удалить в реальном приложении)
         recyclerViewProjects.postDelayed({
@@ -113,7 +112,6 @@ class ProjectSelectionFragment : Fragment() {
                 projectList.addAll(loadedList)
             }
 
-            progressBar.visibility = View.GONE
             updateUI()
         }, 300)
     }
@@ -203,6 +201,7 @@ class ProjectSelectionFragment : Fragment() {
     }
 
     private fun onProjectSelected(project: Project) {
+        Log.d("!!!", "Run open")
         sharedPreferences.edit {
             putString("current_project", gson.toJson(project))
         }
@@ -216,6 +215,7 @@ class ProjectSelectionFragment : Fragment() {
     }
 
     private fun onOpenProjectForEdit(project: Project) {
+        Log.d("!!!", "Construct open")
         sharedPreferences.edit {
             putString("current_project", gson.toJson(project))
         }

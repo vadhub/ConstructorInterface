@@ -1,7 +1,10 @@
 package com.vlg.constructorinterface.filemanager
 
 import android.content.Context
-import java.io.*
+import android.util.Log
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.nio.charset.Charset
 
 object FileManager {
@@ -35,6 +38,7 @@ object FileManager {
         }
 
         val file = File(targetDir, fileName)
+        Log.d("!!l", file.toString())
         if (!file.exists()) return null
 
         FileInputStream(file).use { inputStream ->

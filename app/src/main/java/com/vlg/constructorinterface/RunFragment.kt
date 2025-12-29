@@ -49,7 +49,7 @@ class RunFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        tableDataManager = TableDataManager(view.context)
+        tableDataManager = TableDataManager(view.context, projectPath ?: "")
         schema = tableDataManager.loadTableSchema()
 
         workArea = view.findViewById(R.id.workArea)
@@ -104,6 +104,9 @@ class RunFragment : Fragment() {
             val fragment = TableDataFragment()
             val bundle = Bundle()
             bundle.putString("TABLE_NAME", it.tableName)
+            bundle.putString("PROJECT_PATH", projectPath)
+            bundle.putString("PROJECT_NAME", projectPath)
+            fragment.arguments = bundle
             fragment.arguments = bundle
             navigator.startFragment(fragment)
         }

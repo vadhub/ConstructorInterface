@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
+import com.vlg.constructorinterface.project.ProjectSelectionFragment
 
 class MainActivity : AppCompatActivity(), Navigator {
 
@@ -12,7 +13,7 @@ class MainActivity : AppCompatActivity(), Navigator {
         setContentView(R.layout.activity_main)
 
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        startFragment(ConstructorFragment())
+        startFragment(ProjectSelectionFragment())
     }
 
     override fun startFragment(fragment: Fragment) {
