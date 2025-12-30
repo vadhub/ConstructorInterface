@@ -26,24 +26,10 @@ import com.vlg.constructorinterface.ui.createui.UIManager
 import com.vlg.constructorinterface.ui.createui.settingcomponent.SettingComponentDialog
 import com.vlg.constructorinterface.domain.table.TableDataManager
 
-class ConstructorFragment : Fragment() {
+class ConstructorFragment : BaseFragment() {
     private lateinit var workArea: LinearLayout
     private lateinit var placementHint: TextView
     private lateinit var trashArea: LinearLayout
-    private lateinit var creatorUI: CreatorUI
-    private lateinit var uiManager: UIManager
-    private lateinit var mContext: Context
-    private lateinit var navigator: Navigator
-    private lateinit var tableDataManager: TableDataManager
-
-    private val projectPath by lazy { arguments?.getString("PROJECT_PATH") }
-    private val projectName by lazy { arguments?.getString("PROJECT_NAME") }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        mContext = context
-        navigator = context as Navigator
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,20 +45,13 @@ class ConstructorFragment : Fragment() {
         workArea = view.findViewById(R.id.workArea)
         placementHint = view.findViewById(R.id.placementHint)
         trashArea = view.findViewById(R.id.trashArea)
-        tableDataManager = TableDataManager(mContext, projectPath ?: "")
 
         val textViewPalette = view.findViewById<LinearLayout>(R.id.textViewPalette)
         val editTextPalette = view.findViewById<LinearLayout>(R.id.editTextPalette)
         val buttonPalette = view.findViewById<LinearLayout>(R.id.buttonPalette)
         val spinnerPalette = view.findViewById<LinearLayout>(R.id.spinnerPalette)
 
-        creatorUI = CreatorUI(
-            view.context,
-            layoutInflater,
-            SettingComponentDialog(view.context, tableDataManager)
-        )
         val dragManager = DragManager(workArea, requireActivity(), creatorUI)
-        uiManager = UIManager(view.context, creatorUI, projectPath ?: "")
 
         textViewPalette.setOnLongClickListener { dragManager.startDrag(Type.TEXTVIEW.name, it, placementHint, trashArea) }
         editTextPalette.setOnLongClickListener { dragManager.startDrag(Type.EDITTEXT.name, it, placementHint, trashArea) }

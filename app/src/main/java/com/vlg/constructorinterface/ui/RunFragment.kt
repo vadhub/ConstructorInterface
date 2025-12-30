@@ -1,6 +1,5 @@
 package com.vlg.constructorinterface.ui
 
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,38 +9,22 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import com.vlg.constructorinterface.Navigator
 import com.vlg.constructorinterface.R
-import com.vlg.constructorinterface.ui.createui.CreatorUI
-import com.vlg.constructorinterface.ui.createui.UIManager
-import com.vlg.constructorinterface.model.addText
-import com.vlg.constructorinterface.model.setText
 import com.vlg.constructorinterface.domain.event.ActionExecutor
 import com.vlg.constructorinterface.domain.event.EventDelegat
 import com.vlg.constructorinterface.domain.event.MathExecutor
-import com.vlg.constructorinterface.domain.table.TableDataManager
 import com.vlg.constructorinterface.model.TableSchema
-import kotlin.collections.get
+import com.vlg.constructorinterface.model.addText
+import com.vlg.constructorinterface.model.setText
+import com.vlg.constructorinterface.ui.createui.CreatorUI
 import kotlin.random.Random
 
-class RunFragment : Fragment() {
+class RunFragment : BaseFragment() {
 
     private lateinit var workArea: LinearLayout
-    private lateinit var creatorUI: CreatorUI
-    private lateinit var uiManager: UIManager
     private lateinit var executor: ActionExecutor
     private lateinit var eventDelegat: EventDelegat
-    private lateinit var tableDataManager: TableDataManager
     private var schema: TableSchema? = null
-    private lateinit var navigator: Navigator
-
-    private val projectPath by lazy { arguments?.getString("PROJECT_PATH") }
-    private val projectName by lazy { arguments?.getString("PROJECT_NAME") }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        navigator = context as Navigator
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,12 +35,9 @@ class RunFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        tableDataManager = TableDataManager(view.context, projectPath ?: "")
         schema = tableDataManager.loadTableSchema()
 
         workArea = view.findViewById(R.id.workArea)
-        creatorUI = CreatorUI(view.context, layoutInflater)
-        uiManager = UIManager(view.context, creatorUI, projectPath ?: "")
         eventDelegat = EventDelegat()
         executor = ActionExecutor(eventDelegat)
 
@@ -114,21 +94,21 @@ class RunFragment : Fragment() {
             navigator.startFragment(fragment)
         }
 
-        loadSavedLayout(view)
+        loadSavedLayout()
     }
 
-    private fun loadSavedLayout(view: View) {
+    private fun loadSavedLayout() {
         val (layout, counter) = uiManager.loadLayoutFromFile()
         creatorUI.setElementCounter(counter)
 
         if (layout != null) {
             try {
                 uiManager.restoreLayout(layout, workArea, executor = executor, actions = uiManager.getLayoutFileManager().loadActionsFromFile())
-                Toast.makeText(view.context, "Интерфейс загружен из файла", Toast.LENGTH_SHORT)
+                Toast.makeText(mContext, "Интерфейс загружен из файла", Toast.LENGTH_SHORT)
                     .show()
             } catch (e: Exception) {
                 Log.e("LayoutLoad", "Error restoring layout", e)
-                Toast.makeText(view.context, "Ошибка загрузки интерфейса", Toast.LENGTH_SHORT)
+                Toast.makeText(mContext, "Ошибка загрузки интерфейса", Toast.LENGTH_SHORT)
                     .show()
                 creatorUI.addHintView(workArea)
             }
