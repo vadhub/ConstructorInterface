@@ -10,63 +10,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:text="Введите ID:"
-        android:textSize="16sp" />
-
-    <EditText
-        android:id="@+id/renameIDEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/edit_text_background"
-        android:hint="Новый ID"
-        android:inputType="text"
-        android:maxLength="50"
-        android:maxLines="1"
-        android:padding="12dp" />
-
-    <TextView
-        android:id="@+id/charIDCount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginTop="4dp"
-        android:text="0/20"
-        android:textColor="#666666"
-        android:textSize="12sp" />
-
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="Введите новый текст:"
-        android:textSize="16sp" />
-
-    <EditText
-        android:id="@+id/renameEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/edit_text_background"
-        android:hint="Новый текст"
-        android:inputType="text"
-        android:maxLength="50"
-        android:maxLines="1"
-        android:padding="12dp" />
-
-    <TextView
-        android:id="@+id/charCount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginTop="4dp"
-        android:text="0/50"
-        android:textColor="#666666"
-        android:textSize="12sp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:text="Тип события:"
         android:textSize="16sp" />
 
@@ -188,8 +131,8 @@
         android:layout_marginBottom="8dp"
         android:text="Математическое выражение:"
         android:textSize="16sp"
-        tools:visibility="visible"
-        android:visibility="gone" />
+        android:visibility="gone"
+        tools:visibility="visible" />
 
     <EditText
         android:id="@+id/math_expression"
@@ -201,8 +144,8 @@
         android:inputType="text"
         android:maxLines="1"
         android:padding="12dp"
-        tools:visibility="visible"
-        android:visibility="gone" />
+        android:visibility="gone"
+        tools:visibility="visible" />
 
     <TextView
         android:id="@+id/preview_text"
@@ -210,10 +153,10 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:text="Пример: 2 + 3"
-        tools:visibility="visible"
         android:textColor="#666666"
         android:textSize="12sp"
-        android:visibility="gone" />
+        android:visibility="gone"
+        tools:visibility="visible" />
 
     <TextView
         android:id="@+id/addTextLabel"
@@ -222,8 +165,8 @@
         android:layout_marginBottom="8dp"
         android:text="Запишите текст:"
         android:textSize="16sp"
-        tools:visibility="visible"
-        android:visibility="gone" />
+        android:visibility="gone"
+        tools:visibility="visible" />
 
     <EditText
         android:id="@+id/_expression"
@@ -235,8 +178,8 @@
         android:inputType="text"
         android:maxLines="1"
         android:padding="12dp"
-        tools:visibility="visible"
-        android:visibility="gone" />
+        android:visibility="gone"
+        tools:visibility="visible" />
 
     <TextView
         android:id="@+id/labelSaveTo"
@@ -245,15 +188,37 @@
         android:layout_marginBottom="8dp"
         android:text="Результат сохранить в:"
         android:textSize="16sp"
-        tools:visibility="visible"
-        android:visibility="gone" />
+        android:visibility="gone"
+        tools:visibility="visible" />
 
     <Spinner
         android:id="@+id/result_tag_spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:visibility="visible"
         android:layout_marginBottom="8dp"
-        android:visibility="gone" />
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="16dp">
+
+        <Button
+            android:id="@+id/cancelButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="Отмена" />
+
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Сохранить" />
+
+    </LinearLayout>
 
 </LinearLayout>

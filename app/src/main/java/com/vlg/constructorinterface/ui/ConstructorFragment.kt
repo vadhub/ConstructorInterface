@@ -16,15 +16,9 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.fragment.app.Fragment
-import com.vlg.constructorinterface.Navigator
 import com.vlg.constructorinterface.R
-import com.vlg.constructorinterface.ui.createui.CreatorUI
-import com.vlg.constructorinterface.ui.createui.DragManager
 import com.vlg.constructorinterface.model.Type
-import com.vlg.constructorinterface.ui.createui.UIManager
-import com.vlg.constructorinterface.ui.createui.settingcomponent.SettingComponentDialog
-import com.vlg.constructorinterface.domain.table.TableDataManager
+import com.vlg.constructorinterface.ui.createui.DragManager
 
 class ConstructorFragment : BaseFragment() {
     private lateinit var workArea: LinearLayout

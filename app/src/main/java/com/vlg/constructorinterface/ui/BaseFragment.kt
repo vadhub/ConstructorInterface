@@ -7,7 +7,6 @@ import com.vlg.constructorinterface.Navigator
 import com.vlg.constructorinterface.domain.table.TableDataManager
 import com.vlg.constructorinterface.ui.createui.CreatorUI
 import com.vlg.constructorinterface.ui.createui.UIManager
-import com.vlg.constructorinterface.ui.createui.settingcomponent.SettingComponentDialog
 
 open class BaseFragment : Fragment() {
     protected lateinit var creatorUI: CreatorUI
@@ -31,13 +30,7 @@ open class BaseFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         tableDataManager = TableDataManager(mContext, projectPath ?: "")
-
-        creatorUI = CreatorUI(
-            mContext,
-            layoutInflater,
-            SettingComponentDialog(mContext, tableDataManager)
-        )
-
+        creatorUI = CreatorUI(mContext, navigator, tableDataManager)
         uiManager = UIManager(mContext, creatorUI, projectPath ?: "")
     }
 

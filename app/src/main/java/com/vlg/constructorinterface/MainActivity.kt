@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity(), Navigator {
     }
 
     override fun startFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction().replace(R.id.container, fragment).commit()
+        supportFragmentManager.beginTransaction().addToBackStack(null).replace(R.id.container, fragment).commit()
     }
 
 }

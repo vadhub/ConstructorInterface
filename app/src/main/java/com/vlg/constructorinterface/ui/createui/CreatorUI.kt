@@ -5,7 +5,6 @@ import android.content.Context
 import android.graphics.Color
 import android.util.Log
 import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -17,20 +16,26 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.graphics.toColorInt
 import androidx.core.view.isEmpty
+import androidx.fragment.app.Fragment
+import com.vlg.constructorinterface.Navigator
 import com.vlg.constructorinterface.R
-import com.vlg.constructorinterface.ui.createui.customview.FakeSpinner
-import com.vlg.constructorinterface.ui.createui.settingcomponent.SettingComponentDialog
+import com.vlg.constructorinterface.domain.table.TableDataManager
 import com.vlg.constructorinterface.model.ElementAction
+import com.vlg.constructorinterface.model.ElementEvent
 import com.vlg.constructorinterface.model.ElementInfo
 import com.vlg.constructorinterface.model.Type
 import com.vlg.constructorinterface.model.UiElement
+import com.vlg.constructorinterface.model.extractText
+import com.vlg.constructorinterface.model.setText
+import com.vlg.constructorinterface.ui.createui.customview.FakeSpinner
+import com.vlg.constructorinterface.ui.createui.settingcomponent.SettingComponentFragment
 import java.util.UUID
 
 
 class CreatorUI(
     private val context: Context,
-    private val layoutInflater: LayoutInflater,
-    private val settingComponentDialog: SettingComponentDialog? = null,
+    private val navigator: Navigator,
+    val tableDataManager: TableDataManager
 ) {
 
     private var lastClickTime: Long = 0
@@ -86,6 +91,7 @@ class CreatorUI(
         }
 
         fun getElementsMap() = elementsMap
+        fun getActions() = actions
         fun createAdapterSpinner(context: Context, text: String): ArrayAdapter<String> {
             val listOf = text.split(",")
             val adapterList = ArrayAdapter(
@@ -99,7 +105,6 @@ class CreatorUI(
 
     }
 
-    fun getActions() = actions
     fun getElementCounter() = elementCounter
     fun setElementCounter(i: Int) {
         this.elementCounter = i
@@ -171,7 +176,8 @@ class CreatorUI(
         val timeDiff = currentTime - lastClickTime
 
         if (lastClickedView == view && timeDiff < 300) {
-            settingComponentDialog?.showDialog(layoutInflater, view, actions)
+//            settingComponentDialog?.showDialog(layoutInflater, view, actions)
+            navigator.startFragment(showSettingComponentDialog(view))
             lastClickTime = 0
             lastClickedView = null
         } else {
@@ -561,6 +567,54 @@ class CreatorUI(
         workArea.addView(newRow, insertPosition)
 
         Log.d("DragDebug", "Created new row at position $insertPosition")
+    }
+
+    fun addOrUpdateElementAction(tag: String, action: ElementAction) {
+        val existingAction = actions[tag]
+
+        if (existingAction != null) {
+            existingAction.events.addAll(action.events)
+            Log.d("CreatorUI", "Обновлено действие для элемента $tag")
+        } else {
+            actions[tag] = action
+            Log.d("CreatorUI", "Добавлено действие для элемента $tag")
+        }
+    }
+
+    fun removeElementAction(tag: String) {
+        actions.remove(tag)
+        Log.d("CreatorUI", "Удалено действие элемента: $tag")
+    }
+
+    fun clearAllActions() {
+        actions.clear()
+        Log.d("CreatorUI", "Все действия элементов очищены")
+    }
+
+    fun getEventsByTag(tag: String): List<ElementEvent> {
+        return actions[tag]?.events ?: emptyList()
+    }
+
+    fun showSettingComponentDialog(view: View): Fragment {
+        val settingFragment =
+            SettingComponentFragment.newInstance(view.tag.toString(), view.extractText() ?: "")
+        settingFragment.setOnSettingCompleteListener(object :
+            SettingComponentFragment.OnSettingCompleteListener {
+            override fun onSettingsSaved(
+                tag: String,
+                newText: String,
+                newId: String
+            ) {
+                view.setText(newText)
+                view.tag = newId
+            }
+
+            override fun onSettingsCancelled() {}
+        })
+
+        settingFragment.setCreatorUI(this)
+
+        return settingFragment
     }
 
     fun dpToPx(dp: Int): Int {

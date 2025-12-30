@@ -1,7 +1,9 @@
 package com.vlg.constructorinterface.ui.createui.settingcomponent
 
+import android.content.Context
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 
 class TextInputManager {
@@ -34,4 +36,24 @@ class TextInputManager {
     fun getCurrentCharCountText(text: String, maxLength: Int = 50): String {
         return "${text.length}/$maxLength"
     }
+
+    fun isValidTag(context: Context, tag: String?, maxLength: Int = 50): Boolean {
+        if (tag.isNullOrEmpty()) {
+            Toast.makeText(context, "ID не должно быть пустым", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        if (tag.length >= maxLength) {
+            Toast.makeText(context, "ID не должно быть больше $maxLength", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        if (tag.contains(' ')) {
+            Toast.makeText(context, "ID не должно содержать пробелы", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        return true
+    }
+
 }
