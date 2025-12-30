@@ -279,7 +279,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
 
     fun saveLayoutToFile(workArea: LinearLayout, elementCounter: Int): Boolean {
         val json = saveCurrentLayout(workArea)
-        val jsonActions = creatorUI.getActions().map { it.value }.toJsonArray()
+        val jsonActions = creatorUI.getActionsMap().map { it.value }.toJsonArray()
         val success1 = layoutFileManager.saveLayoutToFile(json)
         val success2 = layoutFileManager.saveCounterToFile(elementCounter)
         val success3 = layoutFileManager.saveActionsToFile(jsonActions.toString())

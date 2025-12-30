@@ -14,13 +14,13 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.vlg.constructorinterface.R
-import com.vlg.constructorinterface.domain.table.TableDataManager
 import com.vlg.constructorinterface.model.ActionType
 import com.vlg.constructorinterface.model.ElementAction
 import com.vlg.constructorinterface.model.ElementInfo
 import com.vlg.constructorinterface.ui.createui.CreatorUI
 
-class EventDialog(private val viewTag: String, private val tableDataManager: TableDataManager) : DialogFragment() {
+class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI) :
+    DialogFragment() {
 
     private lateinit var eventTypeSpinner: Spinner
     private lateinit var saveButton: Button
@@ -31,17 +31,6 @@ class EventDialog(private val viewTag: String, private val tableDataManager: Tab
     private var selectedActionType: ActionType = ActionType.NONE
     private var elementInfoList: List<ElementInfo> = emptyList()
     private lateinit var actionBuilder: ActionBuilder
-
-    private var onEventSavedListener: OnEventSavedListener? = null
-
-    interface OnEventSavedListener {
-        fun onEventSaved(action: ElementAction?)
-        fun onDialogCancelled()
-    }
-
-    fun setOnEventSavedListener(listener: OnEventSavedListener) {
-        this.onEventSavedListener = listener
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,14 +43,14 @@ class EventDialog(private val viewTag: String, private val tableDataManager: Tab
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         eventTypeUIHandler = EventTypeUIHandler(requireContext(), view)
         textInputManager = TextInputManager()
-        actionBuilder = ActionBuilder(requireContext(), tableDataManager)
+        actionBuilder = ActionBuilder(requireContext(), creatorUI.tableDataManager)
 
         setupSpinner()
         setupButtons()
         setupTextWatchers(view)
         eventTypeUIHandler.initViews()
 
-        elementInfoList = CreatorUI.getElementInfoList()
+        elementInfoList = creatorUI.getElementInfoList()
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -114,19 +103,18 @@ class EventDialog(private val viewTag: String, private val tableDataManager: Tab
         eventTypeUIHandler.updateUIForEventType(selectedActionType)
 
         if (selectedActionType == ActionType.MATH_OPERATION || selectedActionType == ActionType.ADD_TEXT) {
-            elementInfoList = CreatorUI.getElementInfoList()
+            elementInfoList = creatorUI.getElementInfoList()
             eventTypeUIHandler.setupMathSpinner(elementInfoList)
         }
     }
 
     private fun setupButtons() {
         saveButton.setOnClickListener {
-            onEventSavedListener?.onEventSaved(buildElementAction())
+            buildElementAction()?.let { creatorUI.addOrUpdateElementAction(viewTag, it) }
             dismiss()
         }
 
         cancelButton.setOnClickListener {
-            onEventSavedListener?.onDialogCancelled()
             dismiss()
         }
     }
@@ -134,8 +122,12 @@ class EventDialog(private val viewTag: String, private val tableDataManager: Tab
     private fun buildElementAction(): ElementAction? {
         val event = when (selectedActionType) {
             ActionType.TOAST -> {
-                actionBuilder.buildElementEvent(ActionType.TOAST, toastMessage = eventTypeUIHandler.getToastMessage())
+                actionBuilder.buildElementEvent(
+                    ActionType.TOAST,
+                    toastMessage = eventTypeUIHandler.getToastMessage()
+                )
             }
+
             ActionType.DIALOG -> {
                 actionBuilder.buildElementEvent(
                     ActionType.DIALOG,
@@ -143,16 +135,22 @@ class EventDialog(private val viewTag: String, private val tableDataManager: Tab
                     dialogMessage = eventTypeUIHandler.getDialogMessage()
                 )
             }
+
             ActionType.CREATE_ENTRY,
             ActionType.OPEN_TABLE -> {
                 actionBuilder.buildElementEvent(selectedActionType)
             }
+
             ActionType.MATH_OPERATION -> {
                 val expression = eventTypeUIHandler.getMathExpression()
                 val selectedPosition = eventTypeUIHandler.getSelectedResultSpinnerPosition()
 
                 if (selectedPosition < 0 || selectedPosition >= elementInfoList.size) {
-                    Toast.makeText(requireContext(), "Выберите элемент для результата", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "Выберите элемент для результата",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     return null
                 }
 
@@ -163,12 +161,17 @@ class EventDialog(private val viewTag: String, private val tableDataManager: Tab
                     selectedElementInfo = selectedElement
                 )
             }
+
             ActionType.ADD_TEXT -> {
                 val expression = eventTypeUIHandler.getExpression()
                 val selectedPosition = eventTypeUIHandler.getSelectedResultSpinnerPosition()
 
                 if (selectedPosition < 0 || selectedPosition >= elementInfoList.size) {
-                    Toast.makeText(requireContext(), "Выберите элемент для результата", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "Выберите элемент для результата",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     return null
                 }
 
@@ -179,10 +182,12 @@ class EventDialog(private val viewTag: String, private val tableDataManager: Tab
                     selectedElementInfo = selectedElement
                 )
             }
+
             ActionType.CHANGE_TEXT -> {
                 val newText = eventTypeUIHandler.getExpression()
                 actionBuilder.buildElementEvent(ActionType.CHANGE_TEXT, newText = newText)
             }
+
             else -> null
         }
 

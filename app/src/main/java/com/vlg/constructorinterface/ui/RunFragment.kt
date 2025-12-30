@@ -44,14 +44,14 @@ class RunFragment : BaseFragment() {
         val mathExecutor = MathExecutor()
 
         eventDelegat.setOnShowToast {
-            val substituted = mathExecutor.substituteVariablesView(it.message, CreatorUI.Companion.getElementsMap())
+            val substituted = mathExecutor.substituteVariablesView(it.message, creatorUI.getElementsMap())
             Toast.makeText(view.context, substituted, Toast.LENGTH_SHORT)
                 .show()
         }
 
         eventDelegat.setOnShowDialog {
-            val substitutedTitle = mathExecutor.substituteVariablesView(it.title, CreatorUI.Companion.getElementsMap())
-            val substitutedMessage = mathExecutor.substituteVariablesView(it.message, CreatorUI.Companion.getElementsMap())
+            val substitutedTitle = mathExecutor.substituteVariablesView(it.title, creatorUI.getElementsMap())
+            val substitutedMessage = mathExecutor.substituteVariablesView(it.message, creatorUI.getElementsMap())
             AlertDialog.Builder(view.context)
                 .setTitle(substitutedTitle)
                 .setMessage(substitutedMessage)
@@ -70,17 +70,17 @@ class RunFragment : BaseFragment() {
         eventDelegat.setOnDeleteEntry { }
 
         eventDelegat.setOnMathOperation {
-            val substituted = mathExecutor.substituteVariablesView(it.expression, CreatorUI.Companion.getElementsMap())
+            val substituted = mathExecutor.substituteVariablesView(it.expression, creatorUI.getElementsMap())
             if (Regex("\\b[a-zA-Z][a-zA-Z0-9_]*\\b").containsMatchIn(substituted)) {
                 throw IllegalArgumentException("Unresolved variables in expression: $substituted")
             }
             val result = mathExecutor.calculate(substituted)
-            CreatorUI.Companion.getElementsMap()[it.resultTag]?.setText(result.toString())
+            creatorUI.getElementsMap()[it.resultTag]?.setText(result.toString())
         }
 
         eventDelegat.setOnAddText {
-            val substituted = mathExecutor.substituteVariablesView(it.newText, CreatorUI.Companion.getElementsMap())
-            CreatorUI.Companion.getElementsMap()[it.resultTag]?.addText(substituted)
+            val substituted = mathExecutor.substituteVariablesView(it.newText, creatorUI.getElementsMap())
+            creatorUI.getElementsMap()[it.resultTag]?.addText(substituted)
         }
 
         eventDelegat.setOnOpenTable {

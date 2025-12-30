@@ -10,7 +10,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.vlg.constructorinterface.R
-import com.vlg.constructorinterface.model.ElementAction
 import com.vlg.constructorinterface.model.ElementEvent
 import com.vlg.constructorinterface.ui.createui.CreatorUI
 
@@ -123,17 +122,7 @@ class SettingComponentFragment : Fragment() {
     }
 
     private fun showEventDialog() {
-        val eventDialog = EventDialog(viewTag ?: "", creatorUI.tableDataManager)
-        eventDialog.setOnEventSavedListener(object : EventDialog.OnEventSavedListener{
-            override fun onEventSaved(action: ElementAction?) {
-                action?.let {
-                    creatorUI.addOrUpdateElementAction(viewTag ?: "", it)
-                }
-            }
-
-            override fun onDialogCancelled() {}
-        })
-        eventDialog.show(childFragmentManager, "EventDialog")
+        EventDialog(viewTag ?: "", creatorUI).show(childFragmentManager, "EventDialog")
     }
 
     private fun handleSave() {

@@ -42,68 +42,10 @@ class CreatorUI(
     private var lastClickedView: View? = null
     private var elementCounter = 1
     private var currentHighlightedRow: LinearLayout? = null
-
-    companion object {
-        private val elementsMap = mutableMapOf<String, View>()
-        private val actions: MutableMap<String, ElementAction> =
-            mutableMapOf() // tag -> EventAction
-
-        fun getElementInfoList(): List<ElementInfo> {
-            return elementsMap.mapNotNull { (tag, view) ->
-                when (view) {
-                    is EditText -> {
-                        ElementInfo(
-                            tag = tag,
-                            displayName = "Поле: ${view.hint ?: "Без заголовка"} (тег: $tag)",
-                            elementType = "EDITTEXT",
-                            currentText = view.text.toString(),
-                            view = view
-                        )
-                    }
-
-                    is FakeSpinner -> {
-                        ElementInfo(
-                            tag = tag,
-                            displayName = "Поле: ${view.hint ?: "Без заголовка"} (тег: $tag)",
-                            elementType = "SPINNER",
-                            currentText = view.text.toString(),
-                            view = view
-                        )
-                    }
-
-                    is TextView -> {
-                        val displayText = if (view is Button)
-                            "Кнопка: ${view.text}"
-                        else
-                            "Текст: ${view.text}"
-                        ElementInfo(
-                            tag = tag,
-                            displayName = "$displayText (тег: $tag)",
-                            elementType = if (view is Button) "BUTTON" else "TEXTVIEW",
-                            currentText = view.text.toString(),
-                            view = view
-                        )
-                    }
-
-                    else -> null
-                }
-            }
-        }
-
-        fun getElementsMap() = elementsMap
-        fun getActions() = actions
-        fun createAdapterSpinner(context: Context, text: String): ArrayAdapter<String> {
-            val listOf = text.split(",")
-            val adapterList = ArrayAdapter(
-                context,
-                android.R.layout.simple_spinner_item,
-                listOf.toList()
-            )
-            adapterList.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            return adapterList
-        }
-
-    }
+    private val actions: MutableMap<String, ElementAction> = mutableMapOf() // tag -> EventAction
+    private val elementsMap = mutableMapOf<String, View>()
+    fun getElementsMap() = elementsMap
+    fun getActionsMap() = actions
 
     fun getElementCounter() = elementCounter
     fun setElementCounter(i: Int) {
@@ -112,6 +54,59 @@ class CreatorUI(
 
     fun clearElementsMap() {
         elementsMap.clear()
+    }
+
+    fun createAdapterSpinner(context: Context, text: String): ArrayAdapter<String> {
+        val listOf = text.split(",")
+        val adapterList = ArrayAdapter(
+            context,
+            android.R.layout.simple_spinner_item,
+            listOf.toList()
+        )
+        adapterList.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        return adapterList
+    }
+
+    fun getElementInfoList(): List<ElementInfo> {
+        return elementsMap.mapNotNull { (tag, view) ->
+            when (view) {
+                is EditText -> {
+                    ElementInfo(
+                        tag = tag,
+                        displayName = "Поле: ${view.hint ?: "Без заголовка"} (тег: $tag)",
+                        elementType = "EDITTEXT",
+                        currentText = view.text.toString(),
+                        view = view
+                    )
+                }
+
+                is FakeSpinner -> {
+                    ElementInfo(
+                        tag = tag,
+                        displayName = "Поле: ${view.hint ?: "Без заголовка"} (тег: $tag)",
+                        elementType = "SPINNER",
+                        currentText = view.text.toString(),
+                        view = view
+                    )
+                }
+
+                is TextView -> {
+                    val displayText = if (view is Button)
+                        "Кнопка: ${view.text}"
+                    else
+                        "Текст: ${view.text}"
+                    ElementInfo(
+                        tag = tag,
+                        displayName = "$displayText (тег: $tag)",
+                        elementType = if (view is Button) "BUTTON" else "TEXTVIEW",
+                        currentText = view.text.toString(),
+                        view = view
+                    )
+                }
+
+                else -> null
+            }
+        }
     }
 
     fun handleExistingElementMove(workArea: LinearLayout, element: View, x: Float, y: Float) {
@@ -584,11 +579,6 @@ class CreatorUI(
     fun removeElementAction(tag: String) {
         actions.remove(tag)
         Log.d("CreatorUI", "Удалено действие элемента: $tag")
-    }
-
-    fun clearAllActions() {
-        actions.clear()
-        Log.d("CreatorUI", "Все действия элементов очищены")
     }
 
     fun getEventsByTag(tag: String): List<ElementEvent> {
