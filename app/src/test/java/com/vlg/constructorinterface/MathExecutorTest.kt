@@ -1,6 +1,6 @@
 package com.vlg.constructorinterface
 
-import com.vlg.constructorinterface.event.MathExecutor
+import com.vlg.constructorinterface.domain.event.MathExecutor
 import org.junit.Test
 import org.junit.Assert.*
 

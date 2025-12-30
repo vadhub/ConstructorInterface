@@ -6,7 +6,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.vlg.constructorinterface.event.MathExecutor
+import com.vlg.constructorinterface.domain.event.MathExecutor
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
