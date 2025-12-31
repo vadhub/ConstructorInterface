@@ -25,7 +25,6 @@ class ConstructorFragment : BaseFragment() {
     private lateinit var placementHint: TextView
     private lateinit var trashArea: LinearLayout
 
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -295,6 +294,16 @@ class ConstructorFragment : BaseFragment() {
             .setMessage(content)
             .setPositiveButton("OK", null)
             .show()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        saveCurrentLayout()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadSavedLayout()
     }
 
 }
