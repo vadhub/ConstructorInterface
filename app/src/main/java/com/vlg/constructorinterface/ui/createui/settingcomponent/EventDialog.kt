@@ -32,6 +32,17 @@ class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI)
     private var elementInfoList: List<ElementInfo> = emptyList()
     private lateinit var actionBuilder: ActionBuilder
 
+    private var onCompleteListener: OnCompleteListener? = null
+
+    interface OnCompleteListener {
+        fun onSaved()
+        fun onCancelled()
+    }
+
+    fun setOnSettingCompleteListener(listener: OnCompleteListener) {
+        this.onCompleteListener = listener
+    }
+
     override fun onStart() {
         super.onStart()
         dialog?.window?.setLayout(
@@ -122,10 +133,12 @@ class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI)
     private fun setupButtons() {
         saveButton.setOnClickListener {
             buildElementAction()?.let { creatorUI.addOrUpdateElementAction(viewTag, it) }
+            onCompleteListener?.onSaved()
             dismiss()
         }
 
         cancelButton.setOnClickListener {
+            onCompleteListener?.onCancelled()
             dismiss()
         }
     }

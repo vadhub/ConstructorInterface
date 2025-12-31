@@ -92,9 +92,9 @@ class SettingComponentFragment : DialogFragment() {
         initViews(view)
         setupButtons()
 
-        addEventsToLayout(creatorUI.getEventsByTag(viewTag ?: ""), eventsList)
-
         textInputManager = TextInputManager()
+
+        updateEventInfo()
 
         textInputManager.setupTextWatchers(editText, charCount, currentText ?: "")
         textInputManager.setupTextWatchers(idEditText, charIDCount, viewTag ?: "")
@@ -117,20 +117,35 @@ class SettingComponentFragment : DialogFragment() {
     private fun setupButtons() {
         saveButton.setOnClickListener {
             handleSave()
+            dismiss()
         }
 
         addEventButton.setOnClickListener {
-            showEventDialog()
+            showEventDialog(object : EventDialog.OnCompleteListener{
+                override fun onSaved() {
+                    updateEventInfo()
+                }
+
+                override fun onCancelled() {}
+            })
         }
 
         cancelButton.setOnClickListener {
             onSettingCompleteListener?.onSettingsCancelled()
-            parentFragmentManager.popBackStack()
+            dismiss()
         }
     }
 
-    private fun showEventDialog() {
-        EventDialog(viewTag ?: "", creatorUI).show(childFragmentManager, "EventDialog")
+    private fun updateEventInfo() {
+        addEventsToLayout(creatorUI.getEventsByTag(viewTag ?: ""), eventsList)
+        countEvents.text = "Событий на элементе: " + creatorUI.getCountOfEventsByTag(viewTag ?: "")
+    }
+
+    private fun showEventDialog(onCompleteListener: EventDialog.OnCompleteListener) {
+        val eventDialog = EventDialog(viewTag ?: "", creatorUI)
+        eventDialog.setOnSettingCompleteListener(onCompleteListener)
+        eventDialog.show(childFragmentManager, "EventDialog")
+
     }
 
     private fun handleSave() {
@@ -141,7 +156,7 @@ class SettingComponentFragment : DialogFragment() {
 
         if (!textInputManager.isValidTag(editText.context,newId, COUNT_CHARS_ID)) return
 
-        onSettingCompleteListener?.onSettingsSaved(oldTag, newId, newText)
+        onSettingCompleteListener?.onSettingsSaved(oldTag, newText, newId)
         parentFragmentManager.popBackStack()
     }
 

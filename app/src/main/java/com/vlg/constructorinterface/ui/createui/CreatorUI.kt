@@ -17,9 +17,7 @@ import android.widget.Toast
 import androidx.core.graphics.toColorInt
 import androidx.core.view.isEmpty
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import com.vlg.constructorinterface.Navigator
 import com.vlg.constructorinterface.R
 import com.vlg.constructorinterface.domain.table.TableDataManager
 import com.vlg.constructorinterface.model.ElementAction
@@ -594,6 +592,10 @@ class CreatorUI(
 
     fun getEventsByTag(tag: String): List<ElementEvent> {
         return actions[tag]?.events ?: emptyList()
+    }
+
+    fun getCountOfEventsByTag(tag: String): Int {
+        return getEventsByTag(tag).count()
     }
 
     fun showSettingComponentDialog(view: View): DialogFragment {
