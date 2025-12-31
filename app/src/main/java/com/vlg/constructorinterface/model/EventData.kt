@@ -24,6 +24,21 @@ sealed class ElementEvent {
     ) : ElementEvent()
 }
 
+fun ElementEvent.info(): String {
+    return when(this) {
+        is ElementEvent.AddText -> "Add Text"
+        is ElementEvent.ChangeText -> "Change Text"
+        is ElementEvent.CreateEntry -> "Create Entry"
+        is ElementEvent.DeleteEntry -> "Delete Entry"
+        is ElementEvent.GetTextFromEditText -> "Get Text From Edit Text"
+        is ElementEvent.OpenTable -> "Open Table"
+        is ElementEvent.MathOperation -> "Math Operation"
+        is ElementEvent.RunCustomCode -> "Run Custom Code"
+        is ElementEvent.ShowDialog -> "Show Dialog"
+        is ElementEvent.ShowToast -> "Show Toast"
+    }
+}
+
 data class ElementAction(
     val events: MutableList<ElementEvent>,
     val targetId: String = "",

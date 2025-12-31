@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.vlg.constructorinterface.R
 import com.vlg.constructorinterface.model.ElementEvent
+import com.vlg.constructorinterface.model.info
 import com.vlg.constructorinterface.ui.createui.CreatorUI
 
 private const val COUNT_CHARS_ID = 40
@@ -175,7 +176,7 @@ class SettingComponentFragment : DialogFragment() {
             textView.textSize = 16f
             textView.setPadding(16, 8, 16, 8)
 
-            textView.text = event.toString()
+            textView.text = event.info()
 
             linearLayout.addView(textView)
         }

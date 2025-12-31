@@ -141,7 +141,8 @@ class ConstructorFragment : BaseFragment() {
 
         if (layout != null) {
             try {
-                uiManager.restoreLayout(layout, workArea, placementHint, trashArea, isFakeLayout = true, actions = uiManager.getLayoutFileManager().loadActionsFromFile())
+                creatorUI.setAction(uiManager.getLayoutFileManager().loadActionsFromFile())
+                uiManager.restoreLayout(layout, workArea, placementHint, trashArea, isFakeLayout = true)
                 Toast.makeText(mContext, "Интерфейс загружен из файла", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 Log.e("LayoutLoad", "Error restoring layout", e)

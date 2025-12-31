@@ -42,10 +42,13 @@ class CreatorUI(
     private var lastClickedView: View? = null
     private var elementCounter = 1
     private var currentHighlightedRow: LinearLayout? = null
-    private val actions: MutableMap<String, ElementAction> = mutableMapOf() // tag -> EventAction
+    private var actions: MutableMap<String, ElementAction> = mutableMapOf() // tag -> EventAction
     private val elementsMap = mutableMapOf<String, View>()
     fun getElementsMap() = elementsMap
     fun getActionsMap() = actions
+    fun setAction(actions: MutableMap<String, ElementAction>) {
+        this.actions = actions
+    }
 
     fun getElementCounter() = elementCounter
     fun setElementCounter(i: Int) {
