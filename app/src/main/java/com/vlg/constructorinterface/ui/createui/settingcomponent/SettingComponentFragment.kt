@@ -8,7 +8,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.DialogFragment
 import com.vlg.constructorinterface.R
 import com.vlg.constructorinterface.model.ElementEvent
 import com.vlg.constructorinterface.ui.createui.CreatorUI
@@ -17,7 +17,7 @@ private const val COUNT_CHARS_ID = 40
 private const val ARG_VIEW_TAG = "view_tag"
 private const val ARG_CURRENT_TEXT = "current_text"
 
-class SettingComponentFragment : Fragment() {
+class SettingComponentFragment : DialogFragment() {
 
     private lateinit var idEditText: EditText
     private lateinit var charIDCount: TextView
@@ -61,6 +61,14 @@ class SettingComponentFragment : Fragment() {
             fragment.arguments = args
             return fragment
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

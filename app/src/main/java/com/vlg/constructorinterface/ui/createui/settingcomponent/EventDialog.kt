@@ -32,6 +32,14 @@ class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI)
     private var elementInfoList: List<ElementInfo> = emptyList()
     private lateinit var actionBuilder: ActionBuilder
 
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -41,6 +49,9 @@ class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        saveButton = view.findViewById(R.id.saveButton)
+        cancelButton = view.findViewById(R.id.cancelButton)
+        eventTypeSpinner = view.findViewById(R.id.eventTypeSpinner)
         eventTypeUIHandler = EventTypeUIHandler(requireContext(), view)
         textInputManager = TextInputManager()
         actionBuilder = ActionBuilder(requireContext(), creatorUI.tableDataManager)

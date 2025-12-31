@@ -16,7 +16,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.graphics.toColorInt
 import androidx.core.view.isEmpty
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import com.vlg.constructorinterface.Navigator
 import com.vlg.constructorinterface.R
 import com.vlg.constructorinterface.domain.table.TableDataManager
@@ -34,7 +36,7 @@ import java.util.UUID
 
 class CreatorUI(
     private val context: Context,
-    private val navigator: Navigator,
+    private val fragmentManager: FragmentManager,
     val tableDataManager: TableDataManager
 ) {
 
@@ -172,7 +174,7 @@ class CreatorUI(
 
         if (lastClickedView == view && timeDiff < 300) {
 //            settingComponentDialog?.showDialog(layoutInflater, view, actions)
-            navigator.startFragment(showSettingComponentDialog(view))
+            showSettingComponentDialog(view).show(fragmentManager, "SettingComponent")
             lastClickTime = 0
             lastClickedView = null
         } else {
@@ -220,7 +222,25 @@ class CreatorUI(
             .start()
     }
 
+    fun removeHintViewIfExists(workArea: LinearLayout) {
+        for (i in 0 until workArea.childCount) {
+            val child = workArea.getChildAt(i)
+            if (child is TextView && child.text == "Перетащите компоненты сюда") {
+                workArea.removeView(child)
+                return
+            }
+        }
+    }
+
     fun addHintView(workArea: LinearLayout) {
+
+        for (i in 0 until workArea.childCount) {
+            val child = workArea.getChildAt(i)
+            if (child is TextView && child.text == "Перетащите компоненты сюда") {
+                return
+            }
+        }
+
         val hintView = TextView(context).apply {
             text = "Перетащите компоненты сюда"
             textSize = 16f
@@ -383,18 +403,9 @@ class CreatorUI(
     }
 
     fun addElementToWorkArea(workArea: LinearLayout, element: View, x: Float, y: Float) {
-        Log.d(
-            "DragDebug",
-            "addElementToWorkArea: x=$x, y=$y, workArea child count=${workArea.childCount}"
-        )
+        Log.d("DragDebug", "addElementToWorkArea: x=$x, y=$y, workArea child count=${workArea.childCount}")
 
-        if (workArea.childCount == 1 && workArea.getChildAt(0) is TextView) {
-            val hintView = workArea.getChildAt(0) as TextView
-            if (hintView.text == "Перетащите компоненты сюда") {
-                workArea.removeAllViews()
-                Log.d("DragDebug", "Removed hint view")
-            }
-        }
+        removeHintViewIfExists(workArea)
 
         var targetRow: LinearLayout? = null
         var rowIndex = -1
@@ -585,7 +596,7 @@ class CreatorUI(
         return actions[tag]?.events ?: emptyList()
     }
 
-    fun showSettingComponentDialog(view: View): Fragment {
+    fun showSettingComponentDialog(view: View): DialogFragment {
         val settingFragment =
             SettingComponentFragment.newInstance(view.tag.toString(), view.extractText() ?: "")
         settingFragment.setOnSettingCompleteListener(object :

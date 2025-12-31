@@ -30,7 +30,7 @@ open class BaseFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         tableDataManager = TableDataManager(mContext, projectPath ?: "")
-        creatorUI = CreatorUI(mContext, navigator, tableDataManager)
+        creatorUI = CreatorUI(mContext, childFragmentManager, tableDataManager)
         uiManager = UIManager(mContext, creatorUI, projectPath ?: "")
     }
 

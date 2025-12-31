@@ -25,6 +25,7 @@ class ConstructorFragment : BaseFragment() {
     private lateinit var placementHint: TextView
     private lateinit var trashArea: LinearLayout
 
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
