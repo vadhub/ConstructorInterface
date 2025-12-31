@@ -6,7 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.vlg.constructorinterface.R
@@ -166,20 +168,47 @@ class SettingComponentFragment : DialogFragment() {
         linearLayout: LinearLayout
     ) {
         linearLayout.removeAllViews()
-        for (event in events) {
-            val textView = TextView(context)
-
-            textView.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            textView.textSize = 16f
-            textView.setPadding(16, 8, 16, 8)
-
-            textView.text = event.info()
-
-            linearLayout.addView(textView)
+        if (events.isEmpty()) {
+            linearLayout.visibility = View.GONE
+            return
         }
+
+        linearLayout.visibility = View.VISIBLE
+
+        val inflater = LayoutInflater.from(linearLayout.context)
+
+        for (event in events) {
+            val view = inflater.inflate(R.layout.item_event, linearLayout, false)
+
+            val tvProjectName = view.findViewById<TextView>(R.id.tvProjectName)
+            val buttonMenu = view.findViewById<ImageButton>(R.id.buttonMenu)
+
+            tvProjectName.text = event.info()
+
+            buttonMenu.setOnClickListener { showMenu(linearLayout) }
+
+            linearLayout.addView(view)
+        }
+    }
+
+    private fun showMenu(view: View) {
+        val popup = PopupMenu(view.context, view)
+        popup.menuInflater.inflate(R.menu.menu_event, popup.menu)
+
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.menu_edit -> {
+
+                    true
+                }
+                R.id.menu_delete -> {
+
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
     }
 
 }
