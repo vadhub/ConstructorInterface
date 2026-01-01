@@ -22,7 +22,7 @@ private const val ARG_CURRENT_TEXT = "current_text"
 
 class SettingComponentFragment : DialogFragment() {
 
-    private lateinit var idEditText: EditText
+    private lateinit var tagEditText: EditText
     private lateinit var charIDCount: TextView
     private lateinit var editText: EditText
     private lateinit var charCount: TextView
@@ -42,7 +42,7 @@ class SettingComponentFragment : DialogFragment() {
     private var onSettingCompleteListener: OnSettingCompleteListener? = null
 
     interface OnSettingCompleteListener {
-        fun onSettingsSaved(tag: String, newText: String, newId: String)
+        fun onSettingsSaved(tag: String, newText: String, newTag: String)
         fun onSettingsCancelled()
     }
 
@@ -100,13 +100,13 @@ class SettingComponentFragment : DialogFragment() {
         updateEventInfo()
 
         textInputManager.setupTextWatchers(editText, charCount, currentText ?: "")
-        textInputManager.setupTextWatchers(idEditText, charIDCount, viewTag ?: "")
+        textInputManager.setupTextWatchers(tagEditText, charIDCount, viewTag ?: "")
         charCount.text = textInputManager.getCurrentCharCountText(currentText ?: "")
         charIDCount.text = textInputManager.getCurrentCharCountText(viewTag ?: "", COUNT_CHARS_ID)
     }
 
     private fun initViews(view: View) {
-        idEditText = view.findViewById(R.id.renameIDEditText)
+        tagEditText = view.findViewById(R.id.renameIDEditText)
         charIDCount = view.findViewById(R.id.charIDCount)
         editText = view.findViewById(R.id.renameEditText)
         charCount = view.findViewById(R.id.charCount)
@@ -153,13 +153,13 @@ class SettingComponentFragment : DialogFragment() {
 
     private fun handleSave() {
         val newText = editText.text.toString().trim()
-        val newId = idEditText.text.toString().trim()
+        val newTag = tagEditText.text.toString().trim()
 
         val oldTag = viewTag ?: ""
 
-        if (!textInputManager.isValidTag(editText.context,newId, COUNT_CHARS_ID)) return
+        if (!textInputManager.isValidTag(editText.context,newTag, COUNT_CHARS_ID)) return
 
-        onSettingCompleteListener?.onSettingsSaved(oldTag, newText, newId)
+        onSettingCompleteListener?.onSettingsSaved(oldTag, newText, newTag)
         parentFragmentManager.popBackStack()
     }
 

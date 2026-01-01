@@ -21,7 +21,7 @@ import com.vlg.constructorinterface.model.Position
 import com.vlg.constructorinterface.model.RowData
 import com.vlg.constructorinterface.model.Size
 import com.vlg.constructorinterface.model.Type
-import com.vlg.constructorinterface.model.UiElement
+import com.vlg.constructorinterface.model.Element
 import com.vlg.constructorinterface.model.UiLayout
 import com.vlg.constructorinterface.model.toJsonArray
 
@@ -36,7 +36,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
     fun getListOfSpinners() = listOfSpinners
 
     fun createElementFromData(
-        elementData: UiElement,
+        elementData: Element,
         trashArea: LinearLayout? = null,
         placementHint: TextView? = null,
         isFakeLayout: Boolean = false
@@ -73,7 +73,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                         position: Int,
                         id: Long
                     ) {
-                        creatorUI.handleDoubleClick(this@apply)
+                        creatorUI.handleDoubleClick(elementData)
                     }
 
                     override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -81,14 +81,14 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
             } else {
 
                 setOnClickListener {
-                    creatorUI.handleDoubleClick(this)
+                    creatorUI.handleDoubleClick(elementData)
                 }
             }
         }
     }
 
     fun createElementFromDataWithActions(
-        elementData: UiElement,
+        elementData: Element,
         event: List<ElementEvent>?,
         executor: ActionExecutor,
         isFakeLayout: Boolean = false
@@ -103,7 +103,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                             position: Int,
                             id: Long
                         ) {
-                            creatorUI.handleDoubleClick(this@apply)
+                            creatorUI.handleDoubleClick(elementData)
                         }
 
                         override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -121,20 +121,20 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
         }
     }
 
-    private fun createComponentFromData(elementData: UiElement, isFakeLayout: Boolean = false) =
+    private fun createComponentFromData(elementData: Element, isFakeLayout: Boolean = false) =
         when (elementData.type) {
             Type.TEXTVIEW -> {
-                creatorUI.createTextView(elementData)
+                creatorUI.createTextView(elementData).first
             }
 
             Type.EDITTEXT -> {
                 val editText = creatorUI.createEditText(elementData)
-                listOfEditTexts.add(editText)
-                editText
+                listOfEditTexts.add(editText.first)
+                editText.first
             }
 
             Type.BUTTON -> {
-                creatorUI.createButton(elementData)
+                creatorUI.createButton(elementData).first
             }
 
             Type.SPINNER -> {
@@ -143,7 +143,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                     listOfSpinners.add(spinner)
                     spinner
                 } else {
-                    creatorUI.createFakeSpinner(elementData)
+                    creatorUI.createFakeSpinner(elementData).first
                 }
             }
         }
@@ -158,22 +158,19 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
             Log.d("SaveDebug", "Строка $i: класс=${child.javaClass.simpleName}")
 
             if (child is LinearLayout && child.orientation == LinearLayout.HORIZONTAL) {
-                val elements = mutableListOf<UiElement>()
+                val elements = mutableListOf<Element>()
 
                 Log.d("SaveDebug", "  Количество элементов в строке: ${child.childCount}")
 
                 for (j in 0 until child.childCount) {
                     val element = child.getChildAt(j)
-                    val elementId = element.tag?.toString()
-
-                    if (elementId == null) {
-                        continue
-                    }
+                    val elementId = element.id
 
                     val uiElement = when (element) {
                         is EditText -> {
-                            UiElement(
+                            Element(
                                 id = elementId,
+                                tag = element.tag.toString(),
                                 type = Type.EDITTEXT,
                                 hint = element.hint?.toString() ?: "",
                                 text = element.text?.toString() ?: "",
@@ -192,8 +189,9 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
 
                         is Button -> {
                             Log.d("SaveDebug", "    Это Button: text=${element.text}")
-                            UiElement(
+                            Element(
                                 id = elementId,
+                                tag = element.tag.toString(),
                                 type = Type.BUTTON,
                                 text = element.text.toString(),
                                 position = Position(
@@ -211,8 +209,9 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
 
                         is FakeSpinner -> {
                             Log.d("SaveDebug", "    Это Spinner: text=${element.text}")
-                            UiElement(
+                            Element(
                                 id = elementId,
+                                tag = element.tag.toString(),
                                 type = Type.SPINNER,
                                 text = element.text.toString(),
                                 position = Position(
@@ -230,8 +229,9 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
 
                         is TextView -> {
                             Log.d("SaveDebug", "    Это TextView: text=${element.text}")
-                            UiElement(
+                            Element(
                                 id = elementId,
+                                tag = element.tag.toString(),
                                 type = Type.TEXTVIEW,
                                 text = element.text.toString(),
                                 position = Position(
@@ -251,7 +251,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                     }
 
                     uiElement?.let {
-                        Log.d("!!!122 save", it.id)
+                        Log.d("!!!122 save", it.tag)
                         elements.add(it)
                         Log.d("SaveDebug", "    Добавлен элемент типа ${it.type}")
                     }
@@ -339,7 +339,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                     Log.d("!!! restore ui manager", actions.toString())
                     createElementFromDataWithActions(
                         elementData,
-                        actions?.get(elementData.id)?.events,
+                        actions?.get(elementData.tag)?.events,
                         executor,
                         isFakeLayout
                     )

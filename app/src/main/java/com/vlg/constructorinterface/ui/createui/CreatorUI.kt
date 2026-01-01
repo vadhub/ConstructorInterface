@@ -20,16 +20,18 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import com.vlg.constructorinterface.R
 import com.vlg.constructorinterface.domain.table.TableDataManager
+import com.vlg.constructorinterface.model.Element
 import com.vlg.constructorinterface.model.ElementAction
 import com.vlg.constructorinterface.model.ElementEvent
 import com.vlg.constructorinterface.model.ElementInfo
+import com.vlg.constructorinterface.model.Position
+import com.vlg.constructorinterface.model.Size
 import com.vlg.constructorinterface.model.Type
-import com.vlg.constructorinterface.model.UiElement
-import com.vlg.constructorinterface.model.extractText
-import com.vlg.constructorinterface.model.setText
 import com.vlg.constructorinterface.ui.createui.customview.FakeSpinner
 import com.vlg.constructorinterface.ui.createui.settingcomponent.SettingComponentFragment
 import java.util.UUID
+import kotlin.collections.set
+import kotlin.let
 
 
 class CreatorUI(
@@ -39,11 +41,11 @@ class CreatorUI(
 ) {
 
     private var lastClickTime: Long = 0
-    private var lastClickedView: View? = null
+    private var lastClickedView: Element? = null
     private var elementCounter = 1
     private var currentHighlightedRow: LinearLayout? = null
     private var actions: MutableMap<String, ElementAction> = mutableMapOf() // tag -> EventAction
-    private val elementsMap = mutableMapOf<String, View>()
+    private val elementsMap = mutableMapOf<Int, Element>()
     fun getElementsMap() = elementsMap
     fun getActionsMap() = actions
     fun setAction(actions: MutableMap<String, ElementAction>) {
@@ -72,42 +74,43 @@ class CreatorUI(
 
     fun getElementInfoList(): List<ElementInfo> {
         return elementsMap.mapNotNull { (tag, view) ->
-            when (view) {
-                is EditText -> {
+            when (view.type) {
+                Type.EDITTEXT -> {
                     ElementInfo(
-                        tag = tag,
-                        displayName = "Поле: ${view.hint ?: "Без заголовка"} (тег: $tag)",
+                        tag = view.tag,
+                        displayName = "Поле: ${view.hint} (тег: ${view.tag})",
                         elementType = "EDITTEXT",
-                        currentText = view.text.toString(),
-                        view = view
+                        currentText = view.text,
                     )
                 }
 
-                is FakeSpinner -> {
+                Type.SPINNER -> {
                     ElementInfo(
-                        tag = tag,
-                        displayName = "Поле: ${view.hint ?: "Без заголовка"} (тег: $tag)",
+                        tag = view.tag,
+                        displayName = "Поле: ${view.hint} (тег: ${view.tag})",
                         elementType = "SPINNER",
-                        currentText = view.text.toString(),
-                        view = view
+                        currentText = view.text,
                     )
                 }
 
-                is TextView -> {
-                    val displayText = if (view is Button)
-                        "Кнопка: ${view.text}"
-                    else
-                        "Текст: ${view.text}"
+                Type.TEXTVIEW -> {
                     ElementInfo(
-                        tag = tag,
-                        displayName = "$displayText (тег: $tag)",
-                        elementType = if (view is Button) "BUTTON" else "TEXTVIEW",
-                        currentText = view.text.toString(),
-                        view = view
+                        tag = view.tag,
+                        displayName = "Текст: ${view.text} (тег: ${view.tag})",
+                        elementType = "TEXTVIEW",
+                        currentText = view.text,
                     )
                 }
 
-                else -> null
+                Type.BUTTON -> {
+                    ElementInfo(
+                        tag = view.tag,
+                        displayName = "Кнопка: ${view.text} (тег: ${view.tag})",
+                        elementType ="BUTTON",
+                        currentText = view.text,
+                    )
+                }
+
             }
         }
     }
@@ -137,13 +140,13 @@ class CreatorUI(
             Type.SPINNER.name -> createFakeSpinner()
             else -> createTextView()
         }.apply {
+            val view = this.first
             val elementId = UUID.randomUUID().toString()
-            this.tag = elementId
-            elementsMap[elementId] = this
+            view.tag = elementId
 
-            setOnLongClickListener { view ->
+            view.setOnLongClickListener { v ->
                 Log.d("DragDebug", "Long click on existing element")
-                val type = when (view) {
+                val type = when (v) {
                     is EditText -> Type.EDITTEXT.name
                     is Button -> Type.BUTTON.name
                     is TextView -> Type.TEXTVIEW.name
@@ -154,52 +157,39 @@ class CreatorUI(
                 val mimeTypes = arrayOf("text/plain")
                 val data = ClipData(type, mimeTypes, item)
 
-                val shadowBuilder = View.DragShadowBuilder(view)
-                view.startDragAndDrop(data, shadowBuilder, view, 0)
+                val shadowBuilder = View.DragShadowBuilder(v)
+                v.startDragAndDrop(data, shadowBuilder, v, 0)
 
                 placementHint.visibility = View.VISIBLE
                 placementHint.text = "Перетащите элемент. Отпустите для размещения в строке"
                 trashArea.visibility = View.VISIBLE
-
                 true
             }
-            setOnClickListener {
-                handleDoubleClick(this)
+            view.setOnClickListener {
+                handleDoubleClick(this.second)
             }
-        }
+        }.first
     }
 
-    fun handleDoubleClick(view: View) {
+    fun handleDoubleClick(element: Element) {
         val currentTime = System.currentTimeMillis()
         val timeDiff = currentTime - lastClickTime
 
-        if (lastClickedView == view && timeDiff < 300) {
+        if (lastClickedView == element && timeDiff < 300) {
 //            settingComponentDialog?.showDialog(layoutInflater, view, actions)
-            showSettingComponentDialog(view).show(fragmentManager, "SettingComponent")
+            showSettingComponentDialog(element).show(fragmentManager, "SettingComponent")
             lastClickTime = 0
             lastClickedView = null
         } else {
-            when (view) {
-                is TextView -> {
-                    if (view !is Button && view !is EditText) {
-                        Toast.makeText(context, "Текстовое поле", Toast.LENGTH_SHORT).show()
-                    } else if (view is Button) {
-                        Toast.makeText(context, "Кнопка", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-
             lastClickTime = currentTime
-            lastClickedView = view
+            lastClickedView = element
         }
     }
 
     fun deleteElementWithAnimation(workArea: LinearLayout, element: View) {
         // Удаляем элемент из мапы
-        val elementId = element.tag?.toString()
-        if (elementId != null) {
-            elementsMap.remove(elementId)
-        }
+        val elementId = element.id
+        elementsMap.remove(elementId)
 
         element.animate()
             .alpha(0f)
@@ -327,39 +317,76 @@ class CreatorUI(
         }
     }
 
-    fun createTextView(element: UiElement? = null): TextView {
+    fun createTextView(element: Element? = null): Pair<TextView, Element> {
         val textView = TextView(context).apply {
             text = element?.text ?: "Текст $elementCounter"
             textSize = 18f
             setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
             setBackgroundResource(R.drawable.element_background)
-            tag = element?.id ?: UUID.randomUUID().toString() // Используем UUID вместо числа
+            tag = element?.tag ?: UUID.randomUUID().toString() // Используем UUID вместо числа
             gravity = Gravity.CENTER
             isClickable = true
         }
-        elementsMap[element?.id ?: textView.tag.toString()] = textView // Сохраняем в мапу
+
+        val newElement = Element(
+            id = textView.id,
+            tag = textView.tag.toString(),
+            type = Type.TEXTVIEW,
+            hint = textView.hint?.toString() ?: "",
+            text = textView.text?.toString() ?: "",
+            position = Position(
+                row = element?.position?.row ?: 0,
+                column = element?.position?.column ?: 0,
+                weight = element?.position?.weight ?: 0.0f,
+                rowIndex = element?.position?.rowIndex ?: 0
+            ),
+            size = Size(
+                width = element?.size?.width ?: 0,
+                height = element?.size?.height ?: 0
+            )
+        )
+
+        elementsMap[element?.id ?: textView.id] = newElement
         elementCounter++
-        return textView
+        return Pair(textView, newElement)
     }
 
-    fun createEditText(element: UiElement? = null): EditText {
+    fun createEditText(element: Element? = null): Pair<EditText, Element> {
         val editText = EditText(context).apply {
             hint = element?.hint ?: "Введите текст $elementCounter"
             textSize = 16f
             setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
             setBackgroundResource(R.drawable.element_background)
-            tag = element?.id ?: UUID.randomUUID().toString() // Используем UUID вместо числа
+            tag = element?.tag ?: UUID.randomUUID().toString() // Используем UUID вместо числа
             gravity = Gravity.CENTER_VERTICAL
             isClickable = true
         }
 
         editText.setText(element?.text ?: "")
-        elementsMap[element?.id ?: editText.tag.toString()] = editText // Сохраняем в мапу
+        val newElement = Element(
+            id = editText.id,
+            tag = editText.tag.toString(),
+            type = Type.EDITTEXT,
+            hint = editText.hint?.toString() ?: "",
+            text = editText.text?.toString() ?: "",
+            position = Position(
+                row = element?.position?.row ?: 0,
+                column = element?.position?.column ?: 0,
+                weight = element?.position?.weight ?: 0.0f,
+                rowIndex = element?.position?.rowIndex ?: 0
+            ),
+            size = Size(
+                width = element?.size?.width ?: 0,
+                height = element?.size?.height ?: 0
+            )
+        )
+
+        elementsMap[element?.id ?: editText.id] = newElement
         elementCounter++
-        return editText
+        return Pair(editText, newElement)
     }
 
-    fun createButton(element: UiElement? = null): Button {
+    fun createButton(element: Element? = null): Pair<Button, Element> {
         val button = Button(context).apply {
             text = element?.text ?: "Кнопка $elementCounter"
             textSize = 16f
@@ -368,43 +395,83 @@ class CreatorUI(
             tag = element?.id ?: UUID.randomUUID().toString()
             isClickable = true
         }
-        elementsMap[element?.id ?: button.tag.toString()] = button
+        val newElement = Element(
+            id = button.id,
+            tag = button.tag.toString(),
+            type = Type.BUTTON,
+            hint = button.hint?.toString() ?: "",
+            text = button.text?.toString() ?: "",
+            position = Position(
+                row = element?.position?.row ?: 0,
+                column = element?.position?.column ?: 0,
+                weight = element?.position?.weight ?: 0.0f,
+                rowIndex = element?.position?.rowIndex ?: 0
+            ),
+            size = Size(
+                width = element?.size?.width ?: 0,
+                height = element?.size?.height ?: 0
+            )
+        )
+
+        elementsMap[element?.id ?: button.id] = newElement
+
         elementCounter++
-        return button
+        return Pair(button, newElement)
     }
 
-    fun createSpinner(element: UiElement? = null): Spinner {
+    fun createSpinner(element: Element? = null): Spinner {
 
         val adapterList = createAdapterSpinner(context, element?.text ?: "")
 
         val spinner: Spinner = Spinner(context).apply {
             setPadding(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8))
-            tag = element?.id ?: UUID.randomUUID().toString()
+            tag = element?.tag ?: UUID.randomUUID().toString()
             adapter = adapterList
         }
 
-        elementsMap[element?.id ?: spinner.tag.toString()] = spinner
+        element?.let { elementsMap[element.id] = it }
         elementCounter++
         return spinner
     }
 
-    fun createFakeSpinner(element: UiElement? = null): FakeSpinner {
+    fun createFakeSpinner(element: Element? = null): Pair<FakeSpinner, Element> {
 
         val spinnerFake = FakeSpinner(context).apply {
             text = element?.text ?: "Текст $elementCounter"
             textSize = 18f
             setBackgroundResource(R.drawable.element_background)
-            tag = element?.id ?: UUID.randomUUID().toString()
+            tag = element?.tag ?: UUID.randomUUID().toString()
             gravity = Gravity.CENTER
             isClickable = true
         }
-        elementsMap[element?.id ?: spinnerFake.tag.toString()] = spinnerFake
+        val newElement = Element(
+            id = spinnerFake.id,
+            tag = spinnerFake.tag.toString(),
+            type = Type.SPINNER,
+            hint = spinnerFake.hint?.toString() ?: "",
+            text = spinnerFake.text?.toString() ?: "",
+            position = Position(
+                row = element?.position?.row ?: 0,
+                column = element?.position?.column ?: 0,
+                weight = element?.position?.weight ?: 0.0f,
+                rowIndex = element?.position?.rowIndex ?: 0
+            ),
+            size = Size(
+                width = element?.size?.width ?: 0,
+                height = element?.size?.height ?: 0
+            )
+        )
+
+        elementsMap[element?.id ?: spinnerFake.id] = newElement
         elementCounter++
-        return spinnerFake
+        return Pair(spinnerFake, newElement)
     }
 
     fun addElementToWorkArea(workArea: LinearLayout, element: View, x: Float, y: Float) {
-        Log.d("DragDebug", "addElementToWorkArea: x=$x, y=$y, workArea child count=${workArea.childCount}")
+        Log.d(
+            "DragDebug",
+            "addElementToWorkArea: x=$x, y=$y, workArea child count=${workArea.childCount}"
+        )
 
         removeHintViewIfExists(workArea)
 
@@ -601,18 +668,20 @@ class CreatorUI(
         return getEventsByTag(tag).count()
     }
 
-    fun showSettingComponentDialog(view: View): DialogFragment {
+    fun showSettingComponentDialog(element: Element): DialogFragment {
         val settingFragment =
-            SettingComponentFragment.newInstance(view.tag.toString(), view.extractText() ?: "")
+            SettingComponentFragment.newInstance(element.tag, element.text)
         settingFragment.setOnSettingCompleteListener(object :
             SettingComponentFragment.OnSettingCompleteListener {
             override fun onSettingsSaved(
                 tag: String,
                 newText: String,
-                newId: String
+                newTag: String
             ) {
-                view.setText(newText)
-                view.tag = newId
+                elementsMap[element.id]?.let {
+                    it.tag = newTag
+                    it.text = newText
+                }
             }
 
             override fun onSettingsCancelled() {}

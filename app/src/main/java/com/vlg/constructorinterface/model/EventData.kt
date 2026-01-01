@@ -15,12 +15,12 @@ sealed class ElementEvent {
     data class MathOperation(
         val expression: String,
         val resultVar: String? = null,
-        val resultTag: String? = null
+        val idResult: Int? = null
     ) : ElementEvent()
     data class AddText(
         val newText: String,
         val resultVar: String? = null,
-        val resultTag: String? = null
+        val idResult: Int? = null
     ) : ElementEvent()
 }
 
@@ -123,7 +123,7 @@ fun ElementEvent.toJson(): JSONObject {
                 put("type", "AddText")
                 put("newText", newText)
                 put("resultVar", resultVar)
-                put("resultTag", resultTag)
+                put("idResult", idResult)
             }
 
             is ElementEvent.RunCustomCode -> {
@@ -135,7 +135,7 @@ fun ElementEvent.toJson(): JSONObject {
                 put("type", "MathOperation")
                 put("expression", expression)
                 put("resultVar", resultVar)
-                put("resultTag", resultTag)
+                put("idResult", idResult)
             }
         }
     }
@@ -210,16 +210,16 @@ fun JSONObject.toElementEvent(): ElementEvent {
 
         "MathOperation" -> {
             val expression = getString("expression")
-            val resultTag = optString("resultTag", "")
+            val idResult = optInt("idResult", -1)
             val resultVar = optString("resultVar", "")
-            ElementEvent.MathOperation(expression, resultVar, resultTag)
+            ElementEvent.MathOperation(expression, resultVar, idResult)
         }
 
         "AddText" -> {
             val newText = getString("newText")
-            val resultTag = optString("resultTag", "")
+            val idResult = optInt("idResult", -1)
             val resultVar = optString("resultVar", "")
-            ElementEvent.AddText(newText, resultVar, resultTag)
+            ElementEvent.AddText(newText, resultVar, idResult)
         }
 
         else -> throw IllegalArgumentException("Unknown event type: $type")
