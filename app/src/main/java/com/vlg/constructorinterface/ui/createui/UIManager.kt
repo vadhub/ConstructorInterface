@@ -36,6 +36,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
     fun getListOfSpinners() = listOfSpinners
 
     fun createElementFromData(
+        workArea: LinearLayout,
         elementData: Element,
         trashArea: LinearLayout? = null,
         placementHint: TextView? = null,
@@ -73,7 +74,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                         position: Int,
                         id: Long
                     ) {
-                        creatorUI.handleDoubleClick(elementData)
+                        creatorUI.handleDoubleClick(workArea,elementData)
                     }
 
                     override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -81,13 +82,14 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
             } else {
 
                 setOnClickListener {
-                    creatorUI.handleDoubleClick(elementData)
+                    creatorUI.handleDoubleClick(workArea,elementData)
                 }
             }
         }
     }
 
     fun createElementFromDataWithActions(
+        workArea: LinearLayout,
         elementData: Element,
         event: List<ElementEvent>?,
         executor: ActionExecutor,
@@ -103,7 +105,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                             position: Int,
                             id: Long
                         ) {
-                            creatorUI.handleDoubleClick(elementData)
+                            creatorUI.handleDoubleClick(workArea,elementData)
                         }
 
                         override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -334,10 +336,10 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
 
             for (elementData in rowData.elements) {
                 val element = if (executor == null)
-                    createElementFromData(elementData, trashArea, placementHint, isFakeLayout)
+                    createElementFromData(workArea, elementData, trashArea, placementHint, isFakeLayout)
                 else {
                     Log.d("!!! restore ui manager", actions.toString())
-                    createElementFromDataWithActions(
+                    createElementFromDataWithActions(workArea,
                         elementData,
                         actions?.get(elementData.tag)?.events,
                         executor,

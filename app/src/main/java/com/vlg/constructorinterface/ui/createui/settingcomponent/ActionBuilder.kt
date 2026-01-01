@@ -6,6 +6,7 @@ import com.vlg.constructorinterface.model.ElementInfo
 import com.vlg.constructorinterface.model.ActionType
 import com.vlg.constructorinterface.model.ElementEvent
 import com.vlg.constructorinterface.domain.table.TableDataManager
+import com.vlg.constructorinterface.model.Element
 
 class ActionBuilder(
     private val context: Context,
@@ -18,7 +19,7 @@ class ActionBuilder(
         dialogTitle: String? = null,
         dialogMessage: String? = null,
         expression: String? = null,
-        selectedElementInfo: ElementInfo? = null,
+        selectedElement: Element? = null,
         newText: String? = null
     ): ElementEvent? {
         return when (actionType) {
@@ -54,13 +55,13 @@ class ActionBuilder(
                 if (expression.isNullOrEmpty()) {
                     Toast.makeText(context, "Введите математическое выражение", Toast.LENGTH_SHORT).show()
                     null
-                } else if (selectedElementInfo == null) {
+                } else if (selectedElement == null) {
                     Toast.makeText(context, "Выберите элемент для результата", Toast.LENGTH_SHORT).show()
                     null
                 } else {
                     ElementEvent.MathOperation(
                         expression = expression,
-                        resultTag = selectedElementInfo.tag
+                        idResult = selectedElement.id
                     )
                 }
             }
@@ -69,13 +70,13 @@ class ActionBuilder(
                 if (expression.isNullOrEmpty()) {
                     Toast.makeText(context, "Введите текст", Toast.LENGTH_SHORT).show()
                     null
-                } else if (selectedElementInfo == null) {
+                } else if (selectedElement == null) {
                     Toast.makeText(context, "Выберите элемент для результата", Toast.LENGTH_SHORT).show()
                     null
                 } else {
                     ElementEvent.AddText(
                         newText = expression,
-                        resultTag = selectedElementInfo.tag
+                        idResult = selectedElement.id
                     )
                 }
             }

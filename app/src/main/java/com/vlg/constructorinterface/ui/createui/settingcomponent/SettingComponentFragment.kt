@@ -1,6 +1,7 @@
 package com.vlg.constructorinterface.ui.createui.settingcomponent
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -159,6 +160,7 @@ class SettingComponentFragment : DialogFragment() {
 
         if (!textInputManager.isValidTag(editText.context,newTag, COUNT_CHARS_ID)) return
 
+        Log.d("!!3", newText)
         onSettingCompleteListener?.onSettingsSaved(oldTag, newText, newTag)
         parentFragmentManager.popBackStack()
     }

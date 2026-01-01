@@ -88,7 +88,7 @@ class DragManager(private val workArea: LinearLayout, private val activity: Acti
                     creatorUI.handleExistingElementMove(workArea,draggedView, event.x, event.y)
                 } else {
                     Log.d("DragDebug", "Creating new element")
-                    val newElement = creatorUI.createElement(elementType, trashArea, placementHint)
+                    val newElement = creatorUI.createElement(workArea, elementType, trashArea, placementHint)
                     creatorUI.addElementToWorkArea(workArea, newElement, event.x, event.y)
                     Toast.makeText(activity, "Элемент добавлен!", Toast.LENGTH_SHORT).show()
                 }

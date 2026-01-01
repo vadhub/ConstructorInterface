@@ -9,6 +9,7 @@ import android.widget.TextView
 import com.vlg.constructorinterface.R
 import com.vlg.constructorinterface.model.ElementInfo
 import com.vlg.constructorinterface.model.ActionType
+import com.vlg.constructorinterface.model.Element
 
 class EventTypeUIHandler(
     private val context: Context,
@@ -113,13 +114,13 @@ class EventTypeUIHandler(
         previewText.visibility = View.GONE
     }
 
-    fun setupMathSpinner(elementInfoList: List<ElementInfo>) {
+    fun setupMathSpinner(elementInfoList: List<Element>) {
         val adapter = createCustomAdapter(elementInfoList)
         resultSpinner.adapter = adapter
     }
 
-    private fun createCustomAdapter(elementInfoList: List<ElementInfo>): ArrayAdapter<ElementInfo> {
-        return object : android.widget.ArrayAdapter<ElementInfo>(
+    private fun createCustomAdapter(elementInfoList: List<Element>): ArrayAdapter<Element> {
+        return object : ArrayAdapter<Element>(
             context,
             android.R.layout.simple_spinner_item,
             elementInfoList
@@ -127,14 +128,14 @@ class EventTypeUIHandler(
             override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
                 val view = super.getView(position, convertView, parent) as TextView
                 val elementInfo = elementInfoList[position]
-                view.text = elementInfo.displayName
+                view.text = elementInfo.type.name
                 return view
             }
 
             override fun getDropDownView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
                 val view = super.getDropDownView(position, convertView, parent) as TextView
                 val elementInfo = elementInfoList[position]
-                view.text = "${elementInfo.displayName}\nТекущее значение: ${elementInfo.currentText}"
+                view.text = "${elementInfo.type.name}\nТекущее значение: ${elementInfo.text + "" + elementInfo.hint}"
                 view.maxLines = 2
                 view.setPadding(16, 16, 16, 16)
                 return view

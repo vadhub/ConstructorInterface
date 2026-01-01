@@ -15,9 +15,11 @@ import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.vlg.constructorinterface.R
 import com.vlg.constructorinterface.model.ActionType
+import com.vlg.constructorinterface.model.Element
 import com.vlg.constructorinterface.model.ElementAction
 import com.vlg.constructorinterface.model.ElementInfo
 import com.vlg.constructorinterface.ui.createui.CreatorUI
+import kotlin.collections.mutableMapOf
 
 class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI) :
     DialogFragment() {
@@ -29,7 +31,7 @@ class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI)
     private lateinit var eventTypeUIHandler: EventTypeUIHandler
     private lateinit var textInputManager: TextInputManager
     private var selectedActionType: ActionType = ActionType.NONE
-    private var elementInfoList: List<ElementInfo> = emptyList()
+    private var elementInfoList: MutableMap<Int, Element> = mutableMapOf()
     private lateinit var actionBuilder: ActionBuilder
 
     private var onCompleteListener: OnCompleteListener? = null
@@ -72,7 +74,7 @@ class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI)
         setupTextWatchers(view)
         eventTypeUIHandler.initViews()
 
-        elementInfoList = creatorUI.getElementInfoList()
+        elementInfoList = creatorUI.getElementsMap()
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -125,8 +127,8 @@ class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI)
         eventTypeUIHandler.updateUIForEventType(selectedActionType)
 
         if (selectedActionType == ActionType.MATH_OPERATION || selectedActionType == ActionType.ADD_TEXT) {
-            elementInfoList = creatorUI.getElementInfoList()
-            eventTypeUIHandler.setupMathSpinner(elementInfoList)
+            elementInfoList = creatorUI.getElementsMap()
+            eventTypeUIHandler.setupMathSpinner(elementInfoList.map { (_, value) -> value })
         }
     }
 
@@ -182,7 +184,7 @@ class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI)
                 actionBuilder.buildElementEvent(
                     ActionType.MATH_OPERATION,
                     expression = expression,
-                    selectedElementInfo = selectedElement
+                    selectedElement = selectedElement
                 )
             }
 
@@ -203,7 +205,7 @@ class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI)
                 actionBuilder.buildElementEvent(
                     ActionType.ADD_TEXT,
                     expression = expression,
-                    selectedElementInfo = selectedElement
+                    selectedElement = selectedElement
                 )
             }
 

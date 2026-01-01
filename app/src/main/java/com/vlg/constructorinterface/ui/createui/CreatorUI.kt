@@ -23,15 +23,12 @@ import com.vlg.constructorinterface.domain.table.TableDataManager
 import com.vlg.constructorinterface.model.Element
 import com.vlg.constructorinterface.model.ElementAction
 import com.vlg.constructorinterface.model.ElementEvent
-import com.vlg.constructorinterface.model.ElementInfo
 import com.vlg.constructorinterface.model.Position
 import com.vlg.constructorinterface.model.Size
 import com.vlg.constructorinterface.model.Type
 import com.vlg.constructorinterface.ui.createui.customview.FakeSpinner
 import com.vlg.constructorinterface.ui.createui.settingcomponent.SettingComponentFragment
 import java.util.UUID
-import kotlin.collections.set
-import kotlin.let
 
 
 class CreatorUI(
@@ -72,49 +69,6 @@ class CreatorUI(
         return adapterList
     }
 
-    fun getElementInfoList(): List<ElementInfo> {
-        return elementsMap.mapNotNull { (tag, view) ->
-            when (view.type) {
-                Type.EDITTEXT -> {
-                    ElementInfo(
-                        tag = view.tag,
-                        displayName = "Поле: ${view.hint} (тег: ${view.tag})",
-                        elementType = "EDITTEXT",
-                        currentText = view.text,
-                    )
-                }
-
-                Type.SPINNER -> {
-                    ElementInfo(
-                        tag = view.tag,
-                        displayName = "Поле: ${view.hint} (тег: ${view.tag})",
-                        elementType = "SPINNER",
-                        currentText = view.text,
-                    )
-                }
-
-                Type.TEXTVIEW -> {
-                    ElementInfo(
-                        tag = view.tag,
-                        displayName = "Текст: ${view.text} (тег: ${view.tag})",
-                        elementType = "TEXTVIEW",
-                        currentText = view.text,
-                    )
-                }
-
-                Type.BUTTON -> {
-                    ElementInfo(
-                        tag = view.tag,
-                        displayName = "Кнопка: ${view.text} (тег: ${view.tag})",
-                        elementType ="BUTTON",
-                        currentText = view.text,
-                    )
-                }
-
-            }
-        }
-    }
-
     fun handleExistingElementMove(workArea: LinearLayout, element: View, x: Float, y: Float) {
         Log.d("DragDebug", "handleExistingElementMove")
 
@@ -130,7 +84,7 @@ class CreatorUI(
         Toast.makeText(context, "Элемент перемещен!", Toast.LENGTH_SHORT).show()
     }
 
-    fun createElement(elementType: String, trashArea: LinearLayout, placementHint: TextView): View {
+    fun createElement(workArea: LinearLayout, elementType: String, trashArea: LinearLayout, placementHint: TextView): View {
         Log.d("DragDebug", "createElement: $elementType")
 
         return when (elementType) {
@@ -141,9 +95,7 @@ class CreatorUI(
             else -> createTextView()
         }.apply {
             val view = this.first
-            val elementId = UUID.randomUUID().toString()
-            view.tag = elementId
-
+            Log.d("!!!9", view.id.toString() + " " + this.second.type)
             view.setOnLongClickListener { v ->
                 Log.d("DragDebug", "Long click on existing element")
                 val type = when (v) {
@@ -166,18 +118,18 @@ class CreatorUI(
                 true
             }
             view.setOnClickListener {
-                handleDoubleClick(this.second)
+                handleDoubleClick(workArea, this.second)
             }
         }.first
     }
 
-    fun handleDoubleClick(element: Element) {
+    fun handleDoubleClick(workArea: LinearLayout, element: Element) {
         val currentTime = System.currentTimeMillis()
         val timeDiff = currentTime - lastClickTime
 
         if (lastClickedView == element && timeDiff < 300) {
 //            settingComponentDialog?.showDialog(layoutInflater, view, actions)
-            showSettingComponentDialog(element).show(fragmentManager, "SettingComponent")
+            showSettingComponentDialog(workArea, element).show(fragmentManager, "SettingComponent")
             lastClickTime = 0
             lastClickedView = null
         } else {
@@ -319,6 +271,7 @@ class CreatorUI(
 
     fun createTextView(element: Element? = null): Pair<TextView, Element> {
         val textView = TextView(context).apply {
+            id = View.generateViewId()
             text = element?.text ?: "Текст $elementCounter"
             textSize = 18f
             setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
@@ -353,6 +306,7 @@ class CreatorUI(
 
     fun createEditText(element: Element? = null): Pair<EditText, Element> {
         val editText = EditText(context).apply {
+            id = View.generateViewId()
             hint = element?.hint ?: "Введите текст $elementCounter"
             textSize = 16f
             setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
@@ -388,6 +342,7 @@ class CreatorUI(
 
     fun createButton(element: Element? = null): Pair<Button, Element> {
         val button = Button(context).apply {
+            id = View.generateViewId()
             text = element?.text ?: "Кнопка $elementCounter"
             textSize = 16f
             setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
@@ -395,6 +350,7 @@ class CreatorUI(
             tag = element?.id ?: UUID.randomUUID().toString()
             isClickable = true
         }
+
         val newElement = Element(
             id = button.id,
             tag = button.tag.toString(),
@@ -424,6 +380,7 @@ class CreatorUI(
         val adapterList = createAdapterSpinner(context, element?.text ?: "")
 
         val spinner: Spinner = Spinner(context).apply {
+            id = element?.id?: View.generateViewId()
             setPadding(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8))
             tag = element?.tag ?: UUID.randomUUID().toString()
             adapter = adapterList
@@ -437,6 +394,7 @@ class CreatorUI(
     fun createFakeSpinner(element: Element? = null): Pair<FakeSpinner, Element> {
 
         val spinnerFake = FakeSpinner(context).apply {
+            id = View.generateViewId()
             text = element?.text ?: "Текст $elementCounter"
             textSize = 18f
             setBackgroundResource(R.drawable.element_background)
@@ -668,7 +626,7 @@ class CreatorUI(
         return getEventsByTag(tag).count()
     }
 
-    fun showSettingComponentDialog(element: Element): DialogFragment {
+    fun showSettingComponentDialog(workArea: LinearLayout, element: Element): DialogFragment {
         val settingFragment =
             SettingComponentFragment.newInstance(element.tag, element.text)
         settingFragment.setOnSettingCompleteListener(object :
@@ -682,6 +640,15 @@ class CreatorUI(
                     it.tag = newTag
                     it.text = newText
                 }
+
+                Log.d("!22", element.id.toString())
+                Log.d("!!", workArea.findViewById<View>(element.id).toString())
+                if (element.type == Type.EDITTEXT) {
+                    workArea.findViewById<EditText>(element.id).hint = newText
+                } else {
+                    workArea.findViewById<TextView>(element.id).text = newText
+                }
+
             }
 
             override fun onSettingsCancelled() {}
