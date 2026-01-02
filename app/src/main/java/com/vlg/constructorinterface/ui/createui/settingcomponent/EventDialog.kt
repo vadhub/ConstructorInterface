@@ -17,11 +17,9 @@ import com.vlg.constructorinterface.R
 import com.vlg.constructorinterface.model.ActionType
 import com.vlg.constructorinterface.model.Element
 import com.vlg.constructorinterface.model.ElementAction
-import com.vlg.constructorinterface.model.ElementInfo
 import com.vlg.constructorinterface.ui.createui.CreatorUI
-import kotlin.collections.mutableMapOf
 
-class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI) :
+class EventDialog(private val viewId: Int, private val creatorUI: CreatorUI) :
     DialogFragment() {
 
     private lateinit var eventTypeSpinner: Spinner
@@ -31,7 +29,7 @@ class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI)
     private lateinit var eventTypeUIHandler: EventTypeUIHandler
     private lateinit var textInputManager: TextInputManager
     private var selectedActionType: ActionType = ActionType.NONE
-    private var elementInfoList: MutableMap<Int, Element> = mutableMapOf()
+    private var elementInfoList: List<Element> = emptyList()
     private lateinit var actionBuilder: ActionBuilder
 
     private var onCompleteListener: OnCompleteListener? = null
@@ -62,6 +60,7 @@ class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
         saveButton = view.findViewById(R.id.saveButton)
         cancelButton = view.findViewById(R.id.cancelButton)
         eventTypeSpinner = view.findViewById(R.id.eventTypeSpinner)
@@ -74,7 +73,7 @@ class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI)
         setupTextWatchers(view)
         eventTypeUIHandler.initViews()
 
-        elementInfoList = creatorUI.getElementsMap()
+        elementInfoList = creatorUI.getElementsMap().map { (_, value) -> value }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -127,14 +126,15 @@ class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI)
         eventTypeUIHandler.updateUIForEventType(selectedActionType)
 
         if (selectedActionType == ActionType.MATH_OPERATION || selectedActionType == ActionType.ADD_TEXT) {
-            elementInfoList = creatorUI.getElementsMap()
-            eventTypeUIHandler.setupMathSpinner(elementInfoList.map { (_, value) -> value })
+            eventTypeUIHandler.setupMathSpinner(elementInfoList)
         }
     }
 
     private fun setupButtons() {
         saveButton.setOnClickListener {
-            buildElementAction()?.let { creatorUI.addOrUpdateElementAction(viewTag, it) }
+            buildElementAction()?.let {
+                creatorUI.addOrUpdateElementAction(viewId, it)
+            }
             onCompleteListener?.onSaved()
             dismiss()
         }
@@ -217,6 +217,6 @@ class EventDialog(private val viewTag: String, private val creatorUI: CreatorUI)
             else -> null
         }
 
-        return event?.let { ElementAction(mutableListOf(it), viewTag, "") }
+        return event?.let { ElementAction(mutableListOf(it), viewId, "") }
     }
 }

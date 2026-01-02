@@ -19,6 +19,7 @@ import com.vlg.constructorinterface.ui.createui.CreatorUI
 
 private const val COUNT_CHARS_ID = 40
 private const val ARG_VIEW_TAG = "view_tag"
+private const val ARG_VIEW_ID = "view_id"
 private const val ARG_CURRENT_TEXT = "current_text"
 
 class SettingComponentFragment : DialogFragment() {
@@ -38,6 +39,7 @@ class SettingComponentFragment : DialogFragment() {
     private lateinit var creatorUI: CreatorUI
 
     private var viewTag: String? = null
+    private var viewId: Int = 0
     private var currentText: String? = null
 
     private var onSettingCompleteListener: OnSettingCompleteListener? = null
@@ -51,15 +53,22 @@ class SettingComponentFragment : DialogFragment() {
         this.onSettingCompleteListener = listener
     }
 
+    private var onUpdateInfoElement: () -> Pair<List<ElementEvent>, Int> = {Pair(emptyList(), 0)} // list events - events count
+
+    fun setUpdateInfoElement(onUpdateInfoElement: () -> Pair<List<ElementEvent>, Int>) {
+        this.onUpdateInfoElement = onUpdateInfoElement
+    }
+
     fun setCreatorUI(creatorUI: CreatorUI) {
         this.creatorUI = creatorUI
     }
 
     companion object {
-        fun newInstance(viewTag: String, currentText: String): SettingComponentFragment {
+        fun newInstance(viewId: Int, viewTag: String, currentText: String): SettingComponentFragment {
             val fragment = SettingComponentFragment()
             val args = Bundle().apply {
                 putString(ARG_VIEW_TAG, viewTag)
+                putInt(ARG_VIEW_ID, viewId)
                 putString(ARG_CURRENT_TEXT, currentText)
             }
             fragment.arguments = args
@@ -79,6 +88,7 @@ class SettingComponentFragment : DialogFragment() {
         super.onCreate(savedInstanceState)
         arguments?.let {
             viewTag = it.getString(ARG_VIEW_TAG)
+            viewId = it.getInt(ARG_VIEW_ID)
             currentText = it.getString(ARG_CURRENT_TEXT)
         }
     }
@@ -95,9 +105,7 @@ class SettingComponentFragment : DialogFragment() {
 
         initViews(view)
         setupButtons()
-
         textInputManager = TextInputManager()
-
         updateEventInfo()
 
         textInputManager.setupTextWatchers(editText, charCount, currentText ?: "")
@@ -141,12 +149,13 @@ class SettingComponentFragment : DialogFragment() {
     }
 
     private fun updateEventInfo() {
-        addEventsToLayout(creatorUI.getEventsByTag(viewTag ?: ""), eventsList)
-        countEvents.text = "Событий на элементе: " + creatorUI.getCountOfEventsByTag(viewTag ?: "")
+        val info = onUpdateInfoElement.invoke()
+        addEventsToLayout(info.first, eventsList)
+        countEvents.text = "Событий на элементе: " + info.second
     }
 
     private fun showEventDialog(onCompleteListener: EventDialog.OnCompleteListener) {
-        val eventDialog = EventDialog(viewTag ?: "", creatorUI)
+        val eventDialog = EventDialog(viewId, creatorUI)
         eventDialog.setOnSettingCompleteListener(onCompleteListener)
         eventDialog.show(childFragmentManager, "EventDialog")
 
@@ -158,9 +167,7 @@ class SettingComponentFragment : DialogFragment() {
 
         val oldTag = viewTag ?: ""
 
-        if (!textInputManager.isValidTag(editText.context,newTag, COUNT_CHARS_ID)) return
-
-        Log.d("!!3", newText)
+        if (!textInputManager.isValidTag(editText.context, newTag, COUNT_CHARS_ID)) return
         onSettingCompleteListener?.onSettingsSaved(oldTag, newText, newTag)
         parentFragmentManager.popBackStack()
     }
@@ -186,9 +193,7 @@ class SettingComponentFragment : DialogFragment() {
             val buttonMenu = view.findViewById<ImageButton>(R.id.buttonMenu)
 
             tvProjectName.text = event.info()
-
             buttonMenu.setOnClickListener { showMenu(linearLayout) }
-
             linearLayout.addView(view)
         }
     }

@@ -43,7 +43,7 @@ class LayoutFileManager(private val context: Context, private val folderProject:
         }
     }
 
-    fun loadActionsFromFile(): MutableMap<String, ElementAction> {
+    fun loadActionsFromFile(): MutableMap<Int, ElementAction> {
         return try {
             val jsonString = FileManager.loadFromFile(context, ACTIONS_FILE_NAME, folderProject)
             val jsonArray = JSONArray(jsonString)

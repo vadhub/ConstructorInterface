@@ -72,7 +72,9 @@ class RunFragment : BaseFragment() {
                 throw IllegalArgumentException("Unresolved variables in expression: $substituted")
             }
             val result = mathExecutor.calculate(substituted)
-            workArea.findViewById<TextView>(it.idResult?:-1)?.text = result.toString()
+            val textView = workArea.findViewById<TextView>(it.idResult?:-1)
+            textView?.text = result.toString()
+
         }
 
         eventDelegat.setOnAddText {

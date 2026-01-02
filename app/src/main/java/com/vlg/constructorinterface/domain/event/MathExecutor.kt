@@ -7,12 +7,14 @@ import net.objecthunter.exp4j.ExpressionBuilder
 class MathExecutor {
 
     fun substituteVariablesView(expression: String, variables: List<Element>): String {
-        var result = expression
-        variables.forEach { element ->
-            //$name
-            result = result.replace("$${element.id}", element.text)
+        val variablesMap = variables.associate { it.tag to it.text }
+
+        val regex = Regex("\\b[a-zA-Z_][a-zA-Z0-9_]*\\b")
+
+        return regex.replace(expression) { matchResult ->
+            val varName = matchResult.value
+            variablesMap[varName] ?: varName
         }
-        return result
     }
 
     fun evaluate(

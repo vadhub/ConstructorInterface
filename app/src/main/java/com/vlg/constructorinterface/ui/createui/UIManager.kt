@@ -44,13 +44,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
     ): View {
         return createComponentFromData(elementData, isFakeLayout).apply {
             setOnLongClickListener { view ->
-                val type = when (view) {
-                    is TextView -> if (view !is Button && view !is EditText) Type.TEXTVIEW else "UNKNOWN"
-                    is EditText -> Type.EDITTEXT
-                    is Button -> Type.BUTTON
-                    is Spinner -> Type.SPINNER
-                    else -> "UNKNOWN"
-                }
+                val type = elementData.type
 
                 val item = ClipData.Item(type.toString())
                 val mimeTypes = arrayOf("text/plain")
@@ -113,10 +107,9 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
             } else {
                 setOnClickListener {
                     if (event != null) {
-                        Log.d("!!! ui manager", event.toString())
                         executor.execute(event)
                     } else {
-                        Log.d("!!! ui manager", "event NULL")
+                        Log.d("!!! ui manager", "event NULL" + " " + this.id + " " + elementData.type)
                     }
                 }
             }
@@ -253,7 +246,6 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                     }
 
                     uiElement?.let {
-                        Log.d("!!!122 save", it.tag)
                         elements.add(it)
                         Log.d("SaveDebug", "    Добавлен элемент типа ${it.type}")
                     }
@@ -311,7 +303,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
         placementHint: TextView? = null,
         trashArea: LinearLayout? = null,
         executor: ActionExecutor? = null,
-        actions: MutableMap<String, ElementAction>? = null,
+        actions: MutableMap<Int, ElementAction>? = null,
         isFakeLayout: Boolean = false
     ) {
         workArea.removeAllViews()
@@ -341,7 +333,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                     Log.d("!!! restore ui manager", actions.toString())
                     createElementFromDataWithActions(workArea,
                         elementData,
-                        actions?.get(elementData.tag)?.events,
+                        actions?.get(elementData.id)?.events,
                         executor,
                         isFakeLayout
                     )

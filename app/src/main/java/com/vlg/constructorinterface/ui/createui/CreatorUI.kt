@@ -39,13 +39,13 @@ class CreatorUI(
 
     private var lastClickTime: Long = 0
     private var lastClickedView: Element? = null
-    private var elementCounter = 1
+    private var elementCounter = 0
     private var currentHighlightedRow: LinearLayout? = null
-    private var actions: MutableMap<String, ElementAction> = mutableMapOf() // tag -> EventAction
+    private var actions: MutableMap<Int, ElementAction> = mutableMapOf() // id_view -> EventAction
     private val elementsMap = mutableMapOf<Int, Element>()
     fun getElementsMap() = elementsMap
     fun getActionsMap() = actions
-    fun setAction(actions: MutableMap<String, ElementAction>) {
+    fun setAction(actions: MutableMap<Int, ElementAction>) {
         this.actions = actions
     }
 
@@ -270,8 +270,9 @@ class CreatorUI(
     }
 
     fun createTextView(element: Element? = null): Pair<TextView, Element> {
+        elementCounter++
         val textView = TextView(context).apply {
-            id = View.generateViewId()
+            id = element?.id ?: elementCounter
             text = element?.text ?: "Текст $elementCounter"
             textSize = 18f
             setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
@@ -281,68 +282,35 @@ class CreatorUI(
             isClickable = true
         }
 
-        val newElement = Element(
-            id = textView.id,
-            tag = textView.tag.toString(),
-            type = Type.TEXTVIEW,
-            hint = textView.hint?.toString() ?: "",
-            text = textView.text?.toString() ?: "",
-            position = Position(
-                row = element?.position?.row ?: 0,
-                column = element?.position?.column ?: 0,
-                weight = element?.position?.weight ?: 0.0f,
-                rowIndex = element?.position?.rowIndex ?: 0
-            ),
-            size = Size(
-                width = element?.size?.width ?: 0,
-                height = element?.size?.height ?: 0
-            )
-        )
-
+        val newElement = createElement(element, textView, Type.TEXTVIEW)
         elementsMap[element?.id ?: textView.id] = newElement
-        elementCounter++
         return Pair(textView, newElement)
     }
 
     fun createEditText(element: Element? = null): Pair<EditText, Element> {
+        elementCounter++
         val editText = EditText(context).apply {
-            id = View.generateViewId()
+            id = element?.id ?: elementCounter
             hint = element?.hint ?: "Введите текст $elementCounter"
             textSize = 16f
             setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
             setBackgroundResource(R.drawable.element_background)
-            tag = element?.tag ?: UUID.randomUUID().toString() // Используем UUID вместо числа
+            tag = element?.tag ?: UUID.randomUUID().toString()
             gravity = Gravity.CENTER_VERTICAL
             isClickable = true
         }
 
         editText.setText(element?.text ?: "")
-        val newElement = Element(
-            id = editText.id,
-            tag = editText.tag.toString(),
-            type = Type.EDITTEXT,
-            hint = editText.hint?.toString() ?: "",
-            text = editText.text?.toString() ?: "",
-            position = Position(
-                row = element?.position?.row ?: 0,
-                column = element?.position?.column ?: 0,
-                weight = element?.position?.weight ?: 0.0f,
-                rowIndex = element?.position?.rowIndex ?: 0
-            ),
-            size = Size(
-                width = element?.size?.width ?: 0,
-                height = element?.size?.height ?: 0
-            )
-        )
+        val newElement = createElement(element, editText, Type.EDITTEXT)
 
         elementsMap[element?.id ?: editText.id] = newElement
-        elementCounter++
         return Pair(editText, newElement)
     }
 
     fun createButton(element: Element? = null): Pair<Button, Element> {
+        elementCounter++
         val button = Button(context).apply {
-            id = View.generateViewId()
+            id = element?.id ?: elementCounter
             text = element?.text ?: "Кнопка $elementCounter"
             textSize = 16f
             setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8))
@@ -351,50 +319,31 @@ class CreatorUI(
             isClickable = true
         }
 
-        val newElement = Element(
-            id = button.id,
-            tag = button.tag.toString(),
-            type = Type.BUTTON,
-            hint = button.hint?.toString() ?: "",
-            text = button.text?.toString() ?: "",
-            position = Position(
-                row = element?.position?.row ?: 0,
-                column = element?.position?.column ?: 0,
-                weight = element?.position?.weight ?: 0.0f,
-                rowIndex = element?.position?.rowIndex ?: 0
-            ),
-            size = Size(
-                width = element?.size?.width ?: 0,
-                height = element?.size?.height ?: 0
-            )
-        )
+        val newElement = createElement(element, button, Type.BUTTON)
 
         elementsMap[element?.id ?: button.id] = newElement
-
-        elementCounter++
         return Pair(button, newElement)
     }
 
     fun createSpinner(element: Element? = null): Spinner {
-
+        elementCounter++
         val adapterList = createAdapterSpinner(context, element?.text ?: "")
 
         val spinner: Spinner = Spinner(context).apply {
-            id = element?.id?: View.generateViewId()
+            id = element?.id?: elementCounter
             setPadding(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8))
             tag = element?.tag ?: UUID.randomUUID().toString()
             adapter = adapterList
         }
 
         element?.let { elementsMap[element.id] = it }
-        elementCounter++
         return spinner
     }
 
     fun createFakeSpinner(element: Element? = null): Pair<FakeSpinner, Element> {
-
+        elementCounter++
         val spinnerFake = FakeSpinner(context).apply {
-            id = View.generateViewId()
+            id = element?.id ?: elementCounter
             text = element?.text ?: "Текст $elementCounter"
             textSize = 18f
             setBackgroundResource(R.drawable.element_background)
@@ -402,12 +351,19 @@ class CreatorUI(
             gravity = Gravity.CENTER
             isClickable = true
         }
-        val newElement = Element(
-            id = spinnerFake.id,
-            tag = spinnerFake.tag.toString(),
-            type = Type.SPINNER,
-            hint = spinnerFake.hint?.toString() ?: "",
-            text = spinnerFake.text?.toString() ?: "",
+        val newElement = createElement(element, spinnerFake, Type.SPINNER)
+
+        elementsMap[element?.id ?: spinnerFake.id] = newElement
+        return Pair(spinnerFake, newElement)
+    }
+
+    private fun createElement(element: Element?, view: TextView, type: Type): Element{
+        return Element(
+            id = element?.id ?: view.id,
+            tag = view.tag.toString(),
+            type = type,
+            hint = view.hint?.toString() ?: "",
+            text = view.text?.toString() ?: "",
             position = Position(
                 row = element?.position?.row ?: 0,
                 column = element?.position?.column ?: 0,
@@ -419,10 +375,6 @@ class CreatorUI(
                 height = element?.size?.height ?: 0
             )
         )
-
-        elementsMap[element?.id ?: spinnerFake.id] = newElement
-        elementCounter++
-        return Pair(spinnerFake, newElement)
     }
 
     fun addElementToWorkArea(workArea: LinearLayout, element: View, x: Float, y: Float) {
@@ -601,34 +553,34 @@ class CreatorUI(
         Log.d("DragDebug", "Created new row at position $insertPosition")
     }
 
-    fun addOrUpdateElementAction(tag: String, action: ElementAction) {
-        val existingAction = actions[tag]
+    fun addOrUpdateElementAction(id: Int, action: ElementAction) {
+        val existingAction = actions[id]
 
         if (existingAction != null) {
             existingAction.events.addAll(action.events)
-            Log.d("CreatorUI", "Обновлено действие для элемента $tag")
+            Log.d("CreatorUI", "Обновлено действие для элемента $id")
         } else {
-            actions[tag] = action
-            Log.d("CreatorUI", "Добавлено действие для элемента $tag")
+            actions[id] = action
+            Log.d("CreatorUI", "Добавлено действие для элемента $id")
         }
     }
 
-    fun removeElementAction(tag: String) {
-        actions.remove(tag)
-        Log.d("CreatorUI", "Удалено действие элемента: $tag")
+    fun removeElementAction(id: Int) {
+        actions.remove(id)
+        Log.d("CreatorUI", "Удалено действие элемента: $id")
     }
 
-    fun getEventsByTag(tag: String): List<ElementEvent> {
-        return actions[tag]?.events ?: emptyList()
+    fun getEventsById(id: Int): List<ElementEvent> {
+        return actions[id]?.events ?: emptyList()
     }
 
-    fun getCountOfEventsByTag(tag: String): Int {
-        return getEventsByTag(tag).count()
+    fun getCountOfEventsById(id: Int): Int {
+        return getEventsById(id).count()
     }
 
     fun showSettingComponentDialog(workArea: LinearLayout, element: Element): DialogFragment {
-        val settingFragment =
-            SettingComponentFragment.newInstance(element.tag, element.text)
+        val settingFragment = SettingComponentFragment.newInstance(element.id,element.tag, element.text)
+        settingFragment.setCreatorUI(this)
         settingFragment.setOnSettingCompleteListener(object :
             SettingComponentFragment.OnSettingCompleteListener {
             override fun onSettingsSaved(
@@ -641,8 +593,6 @@ class CreatorUI(
                     it.text = newText
                 }
 
-                Log.d("!22", element.id.toString())
-                Log.d("!!", workArea.findViewById<View>(element.id).toString())
                 if (element.type == Type.EDITTEXT) {
                     workArea.findViewById<EditText>(element.id).hint = newText
                 } else {
@@ -654,7 +604,7 @@ class CreatorUI(
             override fun onSettingsCancelled() {}
         })
 
-        settingFragment.setCreatorUI(this)
+        settingFragment.setUpdateInfoElement { Pair(getEventsById(element.id), getCountOfEventsById(element.id)) }
 
         return settingFragment
     }

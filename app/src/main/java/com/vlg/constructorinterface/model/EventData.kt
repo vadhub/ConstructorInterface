@@ -41,7 +41,7 @@ fun ElementEvent.info(): String {
 
 data class ElementAction(
     val events: MutableList<ElementEvent>,
-    val targetId: String = "",
+    val targetId: Int = -1,
     val description: String = ""
 )
 
@@ -151,7 +151,7 @@ fun JSONArray.toElementActionList(): List<ElementAction> {
 }
 
 fun JSONObject.toElementAction(): ElementAction {
-    val targetId = optString("targetId", "")
+    val targetId = optInt("targetId", -1)
     val description = optString("description", "")
 
     val eventsJson = getJSONArray("events")
