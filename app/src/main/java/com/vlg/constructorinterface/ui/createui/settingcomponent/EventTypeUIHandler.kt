@@ -1,14 +1,12 @@
 package com.vlg.constructorinterface.ui.createui.settingcomponent
 
 import android.content.Context
-import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
 import com.vlg.constructorinterface.R
-import com.vlg.constructorinterface.model.ElementInfo
 import com.vlg.constructorinterface.model.ActionType
 import com.vlg.constructorinterface.model.Element
 

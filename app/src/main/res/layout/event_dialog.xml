@@ -25,17 +25,17 @@
             android:layout_marginBottom="16dp" />
 
         <TextView
-            android:id="@+id/titleTextDialog"
+            android:id="@+id/titleDialog"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:text="Введите текст диалога:"
+            android:text="Введите заголовок диалога:"
             android:textSize="16sp"
             android:visibility="gone"
             tools:visibility="visible" />
 
         <EditText
-            android:id="@+id/textEditText"
+            android:id="@+id/textTitleEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/edit_text_background"
@@ -44,6 +44,16 @@
             android:maxLength="50"
             android:maxLines="1"
             android:padding="12dp"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/titleTextDialog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="Введите текст диалога:"
+            android:textSize="16sp"
             android:visibility="gone"
             tools:visibility="visible" />
 
@@ -60,18 +70,8 @@
             android:visibility="gone"
             tools:visibility="visible" />
 
-        <TextView
-            android:id="@+id/titleDialog"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:text="Введите заголовок диалога:"
-            android:textSize="16sp"
-            android:visibility="gone"
-            tools:visibility="visible" />
-
         <EditText
-            android:id="@+id/textTitleEditText"
+            android:id="@+id/textEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/edit_text_background"

@@ -20,16 +20,34 @@ import com.vlg.constructorinterface.model.LayoutSerializer
 import com.vlg.constructorinterface.model.Position
 import com.vlg.constructorinterface.model.RowData
 import com.vlg.constructorinterface.model.Size
-import com.vlg.constructorinterface.model.Type
 import com.vlg.constructorinterface.model.Element
+import com.vlg.constructorinterface.model.Type
 import com.vlg.constructorinterface.model.UiLayout
 import com.vlg.constructorinterface.model.toJsonArray
 
-class UIManager(private val context: Context, private val creatorUI: CreatorUI, folderProject: String) {
+class UIManager(
+    private val context: Context,
+    private val elementFactory: ElementFactory,
+    private val elementManager: ElementManager,
+    private val uiInteractionManager: UIInteractionManager,
+    private val workAreaManager: WorkAreaManager,
+    private val eventActionManager: EventActionManager,
+    folderProject: String
+) {
 
     private var layoutFileManager: LayoutFileManager = LayoutFileManager(context, folderProject)
     private val listOfEditTexts: MutableList<EditText> = mutableListOf()
     private val listOfSpinners: MutableList<Spinner> = mutableListOf()
+
+    constructor(context: Context, creatorUI: CreatorUI, folderProject: String) : this(
+        context = context,
+        elementFactory = creatorUI.elementFactory,
+        elementManager = creatorUI.elementManager,
+        uiInteractionManager = creatorUI.uiInteractionManager,
+        workAreaManager = creatorUI.workAreaManager,
+        eventActionManager = creatorUI.eventActionManager,
+        folderProject = folderProject
+    )
 
     fun getLayoutFileManager() = layoutFileManager
     fun getListOfEditTexts() = listOfEditTexts
@@ -68,15 +86,14 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                         position: Int,
                         id: Long
                     ) {
-                        creatorUI.handleDoubleClick(workArea,elementData)
+                        uiInteractionManager.handleDoubleClick(workArea, elementData)
                     }
 
                     override fun onNothingSelected(parent: AdapterView<*>?) {}
                 }
             } else {
-
                 setOnClickListener {
-                    creatorUI.handleDoubleClick(workArea,elementData)
+                    uiInteractionManager.handleDoubleClick(workArea, elementData)
                 }
             }
         }
@@ -99,7 +116,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                             position: Int,
                             id: Long
                         ) {
-                            creatorUI.handleDoubleClick(workArea,elementData)
+                            uiInteractionManager.handleDoubleClick(workArea, elementData)
                         }
 
                         override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -119,26 +136,26 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
     private fun createComponentFromData(elementData: Element, isFakeLayout: Boolean = false) =
         when (elementData.type) {
             Type.TEXTVIEW -> {
-                creatorUI.createTextView(elementData).first
+                elementFactory.createTextView(element = elementData, elementId = elementData.id).first
             }
 
             Type.EDITTEXT -> {
-                val editText = creatorUI.createEditText(elementData)
+                val editText = elementFactory.createEditText(element = elementData, elementId = elementData.id)
                 listOfEditTexts.add(editText.first)
                 editText.first
             }
 
             Type.BUTTON -> {
-                creatorUI.createButton(elementData).first
+                elementFactory.createButton(element = elementData, elementId = elementData.id).first
             }
 
             Type.SPINNER -> {
                 if (!isFakeLayout) {
-                    val spinner = creatorUI.createSpinner(elementData)
+                    val spinner = elementFactory.createSpinner(element = elementData, elementId = elementData.id)
                     listOfSpinners.add(spinner)
                     spinner
                 } else {
-                    creatorUI.createFakeSpinner(elementData).first
+                    elementFactory.createFakeSpinner(element = elementData, elementId = elementData.id).first
                 }
             }
         }
@@ -176,8 +193,8 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                                     rowIndex = i
                                 ),
                                 size = Size(
-                                    width = creatorUI.dpToPx(300),
-                                    height = creatorUI.dpToPx(100)
+                                    width = UiUtils.dpToPx(context, 300),
+                                    height = UiUtils.dpToPx(context, 100)
                                 )
                             )
                         }
@@ -196,8 +213,8 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                                     rowIndex = i
                                 ),
                                 size = Size(
-                                    width = creatorUI.dpToPx(200),
-                                    height = creatorUI.dpToPx(100)
+                                    width = UiUtils.dpToPx(context, 200),
+                                    height = UiUtils.dpToPx(context, 100)
                                 )
                             )
                         }
@@ -216,8 +233,8 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                                     rowIndex = i
                                 ),
                                 size = Size(
-                                    width = creatorUI.dpToPx(200),
-                                    height = creatorUI.dpToPx(100)
+                                    width = UiUtils.dpToPx(context, 200),
+                                    height = UiUtils.dpToPx(context, 100)
                                 )
                             )
                         }
@@ -236,8 +253,8 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                                     rowIndex = i
                                 ),
                                 size = Size(
-                                    width = creatorUI.dpToPx(200),
-                                    height = creatorUI.dpToPx(100)
+                                    width = UiUtils.dpToPx(context, 200),
+                                    height = UiUtils.dpToPx(context, 100)
                                 )
                             )
                         }
@@ -273,7 +290,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
 
     fun saveLayoutToFile(workArea: LinearLayout, elementCounter: Int): Boolean {
         val json = saveCurrentLayout(workArea)
-        val jsonActions = creatorUI.getActionsMap().map { it.value }.toJsonArray()
+        val jsonActions = eventActionManager.getActionsMap().map { it.value }.toJsonArray()
         val success1 = layoutFileManager.saveLayoutToFile(json)
         val success2 = layoutFileManager.saveCounterToFile(elementCounter)
         val success3 = layoutFileManager.saveActionsToFile(jsonActions.toString())
@@ -307,7 +324,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
         isFakeLayout: Boolean = false
     ) {
         workArea.removeAllViews()
-        creatorUI.clearElementsMap()
+        elementManager.clearElementsMap()
 
         for (rowData in layout.rows) {
             val newRow = LinearLayout(context).apply {
@@ -315,14 +332,14 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 ).apply {
-                    setMargins(0, creatorUI.dpToPx(4), 0, creatorUI.dpToPx(4))
+                    setMargins(0, UiUtils.dpToPx(context, 4), 0, UiUtils.dpToPx(context, 4))
                 }
                 orientation = LinearLayout.HORIZONTAL
                 setPadding(
-                    creatorUI.dpToPx(8),
-                    creatorUI.dpToPx(8),
-                    creatorUI.dpToPx(8),
-                    creatorUI.dpToPx(8)
+                    UiUtils.dpToPx(context, 8),
+                    UiUtils.dpToPx(context, 8),
+                    UiUtils.dpToPx(context, 8),
+                    UiUtils.dpToPx(context, 8)
                 )
             }
 
@@ -345,7 +362,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         elementData.position.weight
                     ).apply {
-                        setMargins(creatorUI.dpToPx(4), 0, creatorUI.dpToPx(4), 0)
+                        setMargins(UiUtils.dpToPx(context, 4), 0, UiUtils.dpToPx(context, 4), 0)
                     }
                 } else {
                     LinearLayout.LayoutParams(
@@ -356,18 +373,17 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
 
                 element.layoutParams = params
                 newRow.addView(element)
+
+                // Добавляем элемент в менеджер
+                elementManager.addElement(element.id, elementData)
             }
 
             workArea.addView(newRow)
         }
 
         if (workArea.isEmpty()) {
-            creatorUI.addHintView(workArea)
+            workAreaManager.addHintView(workArea)
         }
-    }
-
-    fun hasSavedLayout(): Boolean {
-        return layoutFileManager.hasSavedLayout()
     }
 
     fun getLayoutFileInfo(): LayoutFileManager.FileInfo {
@@ -375,7 +391,7 @@ class UIManager(private val context: Context, private val creatorUI: CreatorUI, 
     }
 
     fun deleteLayoutFiles(): Boolean {
-        creatorUI.clearElementsMap()
+        elementManager.clearElementsMap()
         return layoutFileManager.deleteLayoutFile()
     }
 

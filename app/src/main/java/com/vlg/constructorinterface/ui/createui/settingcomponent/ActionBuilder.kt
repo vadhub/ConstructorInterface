@@ -2,11 +2,10 @@ package com.vlg.constructorinterface.ui.createui.settingcomponent
 
 import android.content.Context
 import android.widget.Toast
-import com.vlg.constructorinterface.model.ElementInfo
-import com.vlg.constructorinterface.model.ActionType
-import com.vlg.constructorinterface.model.ElementEvent
 import com.vlg.constructorinterface.domain.table.TableDataManager
+import com.vlg.constructorinterface.model.ActionType
 import com.vlg.constructorinterface.model.Element
+import com.vlg.constructorinterface.model.ElementEvent
 
 class ActionBuilder(
     private val context: Context,
