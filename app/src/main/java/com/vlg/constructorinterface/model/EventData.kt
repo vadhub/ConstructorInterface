@@ -40,6 +40,7 @@ fun ElementEvent.info(): String {
 }
 
 data class ElementAction(
+    val id: Int,
     val events: MutableList<ElementEvent>,
     val targetId: Int = -1,
     val description: String = ""
@@ -70,6 +71,7 @@ fun List<ElementAction>.toJsonArray(): JSONArray {
 
 fun ElementAction.toJson(): JSONObject {
     return JSONObject().apply {
+        put("id", id)
         put("targetId", targetId)
         put("description", description)
         put("events", JSONArray().apply {
@@ -151,6 +153,7 @@ fun JSONArray.toElementActionList(): List<ElementAction> {
 }
 
 fun JSONObject.toElementAction(): ElementAction {
+    val id = optInt("id", -1)
     val targetId = optInt("targetId", -1)
     val description = optString("description", "")
 
@@ -161,7 +164,7 @@ fun JSONObject.toElementAction(): ElementAction {
         events.add(eventJson.toElementEvent())
     }
 
-    return ElementAction(events, targetId, description)
+    return ElementAction(id, events, targetId, description)
 }
 
 fun JSONObject.toElementEvent(): ElementEvent {

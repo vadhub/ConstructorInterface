@@ -18,6 +18,7 @@ import com.vlg.constructorinterface.model.ActionType
 import com.vlg.constructorinterface.model.Element
 import com.vlg.constructorinterface.model.ElementAction
 import com.vlg.constructorinterface.ui.createui.CreatorUI
+import kotlin.random.Random
 
 class EventDialog(private val viewId: Int, private val creatorUI: CreatorUI) :
     DialogFragment() {
@@ -217,6 +218,6 @@ class EventDialog(private val viewId: Int, private val creatorUI: CreatorUI) :
             else -> null
         }
 
-        return event?.let { ElementAction(mutableListOf(it), viewId, "") }
+        return event?.let { ElementAction(Random.nextInt(),mutableListOf(it), viewId, "") }
     }
 }
