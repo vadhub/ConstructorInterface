@@ -2,7 +2,7 @@ package com.vlg.constructorinterface.domain.event
 
 import com.vlg.constructorinterface.model.ElementEvent
 
-class EventDelegat() {
+class EventDelegate() {
 
     private var createEntry: (ElementEvent.CreateEntry) -> Unit = {}
     private var deleteEntry: (ElementEvent.DeleteEntry) -> Unit = {}

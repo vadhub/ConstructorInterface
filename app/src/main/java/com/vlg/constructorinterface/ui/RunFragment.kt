@@ -11,7 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.vlg.constructorinterface.R
 import com.vlg.constructorinterface.domain.event.ActionExecutor
-import com.vlg.constructorinterface.domain.event.EventDelegat
+import com.vlg.constructorinterface.domain.event.EventDelegate
 import com.vlg.constructorinterface.domain.event.MathExecutor
 import com.vlg.constructorinterface.model.TableSchema
 import kotlin.random.Random
@@ -20,7 +20,7 @@ class RunFragment : BaseFragment() {
 
     private lateinit var workArea: LinearLayout
     private lateinit var executor: ActionExecutor
-    private lateinit var eventDelegat: EventDelegat
+    private lateinit var eventDelegate: EventDelegate
     private var schema: TableSchema? = null
 
     override fun onCreateView(
@@ -35,18 +35,18 @@ class RunFragment : BaseFragment() {
         schema = tableDataManager.loadTableSchema()
 
         workArea = view.findViewById(R.id.workArea)
-        eventDelegat = EventDelegat()
-        executor = ActionExecutor(eventDelegat)
+        eventDelegate = EventDelegate()
+        executor = ActionExecutor(eventDelegate)
 
         val mathExecutor = MathExecutor()
 
-        eventDelegat.setOnShowToast {
+        eventDelegate.setOnShowToast {
             val substituted = mathExecutor.substituteVariablesView(it.message, creatorUI.getElementsMap().map { (_, value) -> value })
             Toast.makeText(view.context, substituted, Toast.LENGTH_SHORT)
                 .show()
         }
 
-        eventDelegat.setOnShowDialog {
+        eventDelegate.setOnShowDialog {
             val substitutedTitle = mathExecutor.substituteVariablesView(it.title, creatorUI.getElementsMap().map { (_, value) -> value })
             val substitutedMessage = mathExecutor.substituteVariablesView(it.message, creatorUI.getElementsMap().map { (_, value) -> value })
             AlertDialog.Builder(view.context)
@@ -56,7 +56,7 @@ class RunFragment : BaseFragment() {
                 .show()
         }
 
-        eventDelegat.setOnCreateEntry {
+        eventDelegate.setOnCreateEntry {
             val values = mutableMapOf<String, String>()
             uiManager.getListOfEditTexts().forEach { values.put(it.tag.toString(), it.text.toString()) }
             uiManager.getListOfSpinners().forEach { values.put(it.tag.toString(), it.selectedItem.toString()) }
@@ -64,9 +64,9 @@ class RunFragment : BaseFragment() {
             tableDataManager.saveTableSchema(tableDataManager.addNewRow(schema, uid, values))
         }
 
-        eventDelegat.setOnDeleteEntry { }
+        eventDelegate.setOnDeleteEntry { }
 
-        eventDelegat.setOnMathOperation {
+        eventDelegate.setOnMathOperation {
             val substituted = mathExecutor.substituteVariablesView(it.expression, creatorUI.getElementsMap().map { (_, value) -> value })
             if (Regex("\\b[a-zA-Z][a-zA-Z0-9_]*\\b").containsMatchIn(substituted)) {
                 throw IllegalArgumentException("Unresolved variables in expression: $substituted")
@@ -77,12 +77,12 @@ class RunFragment : BaseFragment() {
 
         }
 
-        eventDelegat.setOnAddText {
+        eventDelegate.setOnAddText {
             val substituted = mathExecutor.substituteVariablesView(it.newText, creatorUI.getElementsMap().map { (_, value) -> value })
             workArea.findViewById<TextView>(it.idResult?:-1)?.text = substituted
         }
 
-        eventDelegat.setOnOpenTable {
+        eventDelegate.setOnOpenTable {
             val fragment = TableDataFragment()
             val bundle = Bundle()
             bundle.putString("TABLE_NAME", it.tableName)

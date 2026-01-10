@@ -3,18 +3,18 @@ package com.vlg.constructorinterface.domain.event
 import com.vlg.constructorinterface.model.ElementEvent
 
 
-class ActionExecutor(private val eventDelegat: EventDelegat) {
+class ActionExecutor(private val eventDelegate: EventDelegate) {
 
     fun execute(event: List<ElementEvent>) {
         event.forEach {
             when (it) {
-                is ElementEvent.ShowToast -> eventDelegat.eventToast(it)
-                is ElementEvent.ShowDialog -> eventDelegat.eventDialog(it)
-                is ElementEvent.CreateEntry -> eventDelegat.eventCreateEntry(it)
-                is ElementEvent.DeleteEntry -> eventDelegat.eventDeleteEntry(it)
-                is ElementEvent.OpenTable -> eventDelegat.eventOpenTable(it)
-                is ElementEvent.AddText -> eventDelegat.eventAddText(it)
-                is ElementEvent.MathOperation -> eventDelegat.eventMath(it)
+                is ElementEvent.ShowToast -> eventDelegate.eventToast(it)
+                is ElementEvent.ShowDialog -> eventDelegate.eventDialog(it)
+                is ElementEvent.CreateEntry -> eventDelegate.eventCreateEntry(it)
+                is ElementEvent.DeleteEntry -> eventDelegate.eventDeleteEntry(it)
+                is ElementEvent.OpenTable -> eventDelegate.eventOpenTable(it)
+                is ElementEvent.AddText -> eventDelegate.eventAddText(it)
+                is ElementEvent.MathOperation -> eventDelegate.eventMath(it)
                 else -> throw IllegalArgumentException("Unsupported event type: ${it::class.simpleName}")
             }
         }

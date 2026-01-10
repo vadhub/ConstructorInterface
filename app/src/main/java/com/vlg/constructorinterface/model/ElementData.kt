@@ -1,6 +1,5 @@
 package com.vlg.constructorinterface.model
 
-import android.view.View
 import com.google.gson.Gson
 
 data class Element(
@@ -12,18 +11,6 @@ data class Element(
     val position: Position,
     val size: Size
 )
-
-data class ElementInfo(
-    val tag: String,
-    val displayName: String,
-    val elementType: String,
-    val currentText: String,
-    val view: View? = null
-) {
-    override fun toString(): String {
-        return displayName
-    }
-}
 
 enum class Type() {
     TEXTVIEW,
