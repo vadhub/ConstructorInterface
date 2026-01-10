@@ -122,6 +122,8 @@ class UIInteractionManager(
             override fun onSettingsCancelled() {}
         })
 
+        settingFragment.setDeleteAction { i, event -> eventActionManager.removeElementEvent(i, event) }
+
         settingFragment.setUpdateInfoElement {
             Pair(eventActionManager.getEventsById(element.id),
                 eventActionManager.getCountOfEventsById(element.id))

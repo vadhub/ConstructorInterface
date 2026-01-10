@@ -53,9 +53,14 @@ class SettingComponentFragment : DialogFragment() {
     }
 
     private var onUpdateInfoElement: () -> Pair<List<ElementEvent>, Int> = {Pair(emptyList(), 0)} // list events - events count
+    private var onDeleteAction: (Int, ElementEvent) -> Unit = {_, _ ->}
 
     fun setUpdateInfoElement(onUpdateInfoElement: () -> Pair<List<ElementEvent>, Int>) {
         this.onUpdateInfoElement = onUpdateInfoElement
+    }
+
+    fun setDeleteAction(onDeleteAction: (Int, ElementEvent) -> Unit) {
+        this.onDeleteAction = onDeleteAction
     }
 
     fun setCreatorUI(creatorUI: CreatorUI) {
@@ -192,12 +197,12 @@ class SettingComponentFragment : DialogFragment() {
             val buttonMenu = view.findViewById<ImageButton>(R.id.buttonMenu)
 
             tvProjectName.text = event.info()
-            buttonMenu.setOnClickListener { showMenu(linearLayout) }
+            buttonMenu.setOnClickListener { showMenu(view, event) }
             linearLayout.addView(view)
         }
     }
 
-    private fun showMenu(view: View) {
+    private fun showMenu(view: View, event: ElementEvent) {
         val popup = PopupMenu(view.context, view)
         popup.menuInflater.inflate(R.menu.menu_event, popup.menu)
 
@@ -205,10 +210,17 @@ class SettingComponentFragment : DialogFragment() {
             when (item.itemId) {
                 R.id.menu_edit -> {
 
+                    showEventDialog(object : EventDialog.OnCompleteListener{
+                        override fun onSaved() {
+                            updateEventInfo()
+                        }
+
+                        override fun onCancelled() {}
+                    })
                     true
                 }
                 R.id.menu_delete -> {
-
+                    onDeleteAction.invoke(viewId, event)
                     true
                 }
                 else -> false

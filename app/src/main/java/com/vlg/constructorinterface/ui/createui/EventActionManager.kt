@@ -25,6 +25,22 @@ class EventActionManager {
         }
     }
 
+
+    fun removeElementEvent(actionId: Int, eventToRemove: ElementEvent): Boolean {
+        val action = actions[actionId] ?: run {
+            Log.w("EventActionManager", "Действие с id=$actionId не найдено")
+            return false
+        }
+
+        if (action.events.remove(eventToRemove)) {
+            Log.d("EventActionManager", "Событие удалено из действия $actionId")
+            return true
+        } else {
+            Log.w("EventActionManager", "Событие не найдено в действии $actionId")
+            return false
+        }
+    }
+
     fun getEventsById(id: Int): List<ElementEvent> {
         return actions[id]?.events ?: emptyList()
     }

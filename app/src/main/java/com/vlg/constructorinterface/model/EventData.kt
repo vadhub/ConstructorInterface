@@ -22,6 +22,7 @@ sealed class ElementEvent {
         val resultVar: String? = null,
         val idResult: Int? = null
     ) : ElementEvent()
+    data class Empty(val message: String = "Empty")
 }
 
 fun ElementEvent.info(): String {
