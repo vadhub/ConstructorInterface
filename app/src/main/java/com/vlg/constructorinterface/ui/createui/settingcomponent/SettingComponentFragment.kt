@@ -221,6 +221,7 @@ class SettingComponentFragment : DialogFragment() {
                 }
                 R.id.menu_delete -> {
                     onDeleteAction.invoke(viewId, event)
+                    updateEventInfo()
                     true
                 }
                 else -> false
