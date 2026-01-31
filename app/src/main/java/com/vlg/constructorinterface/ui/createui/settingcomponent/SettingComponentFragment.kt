@@ -1,5 +1,7 @@
 package com.vlg.constructorinterface.ui.createui.settingcomponent
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,10 +12,12 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.vlg.constructorinterface.R
 import com.vlg.constructorinterface.model.ElementEvent
 import com.vlg.constructorinterface.model.info
+import com.vlg.constructorinterface.model.infoFull
 import com.vlg.constructorinterface.ui.createui.CreatorUI
 
 private const val COUNT_CHARS_ID = 40
@@ -208,15 +212,8 @@ class SettingComponentFragment : DialogFragment() {
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                R.id.menu_edit -> {
-
-                    showEventDialog(object : EventDialog.OnCompleteListener{
-                        override fun onSaved() {
-                            updateEventInfo()
-                        }
-
-                        override fun onCancelled() {}
-                    })
+                R.id.menu_edit_event -> {
+                    showSimpleAlertDialog(event)
                     true
                 }
                 R.id.menu_delete -> {
@@ -228,6 +225,20 @@ class SettingComponentFragment : DialogFragment() {
             }
         }
         popup.show()
+    }
+
+    private fun showSimpleAlertDialog(event: ElementEvent) {
+        val builder = AlertDialog.Builder(context)
+
+        builder.setTitle(event.info())
+        builder.setMessage(event.infoFull())
+
+        builder.setPositiveButton("OK") { dialog, which ->
+            dialog.dismiss()
+        }
+
+        val alertDialog: AlertDialog = builder.create()
+        alertDialog.show()
     }
 
 }

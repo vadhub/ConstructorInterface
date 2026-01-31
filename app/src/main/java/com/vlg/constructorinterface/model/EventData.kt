@@ -40,6 +40,21 @@ fun ElementEvent.info(): String {
     }
 }
 
+fun ElementEvent.infoFull(): String {
+    return when(this) {
+        is ElementEvent.AddText -> "Add Text: newText: $newText, resultVar: $resultVar, idResult: $idResult"
+        is ElementEvent.ChangeText -> "Change Text newText: $newText"
+        is ElementEvent.CreateEntry -> "Create Entry tableName: $tableName"
+        is ElementEvent.DeleteEntry -> "Delete Entry tableName: $tableName"
+        is ElementEvent.GetTextFromEditText -> "Get Text From Edit Text editTextId: $editTextId"
+        is ElementEvent.OpenTable -> "Open Table tableName: $tableName"
+        is ElementEvent.MathOperation -> "Math Operation idResult: $idResult, resultVar: $resultVar, expression: $expression"
+        is ElementEvent.RunCustomCode -> "Run Custom Code $code"
+        is ElementEvent.ShowDialog -> "Show Dialog title $title, message: $message"
+        is ElementEvent.ShowToast -> "Show Toast message $message"
+    }
+}
+
 data class ElementAction(
     val id: Int,
     val events: MutableList<ElementEvent>,

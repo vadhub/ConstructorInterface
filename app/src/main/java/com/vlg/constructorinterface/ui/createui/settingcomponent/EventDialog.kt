@@ -17,10 +17,11 @@ import com.vlg.constructorinterface.R
 import com.vlg.constructorinterface.model.ActionType
 import com.vlg.constructorinterface.model.Element
 import com.vlg.constructorinterface.model.ElementAction
+import com.vlg.constructorinterface.model.ElementEvent
 import com.vlg.constructorinterface.ui.createui.CreatorUI
 import kotlin.random.Random
 
-class EventDialog(private val viewId: Int, private val creatorUI: CreatorUI) :
+class EventDialog(private val viewId: Int, private val creatorUI: CreatorUI, private val event: ElementEvent? = null) :
     DialogFragment() {
 
     private lateinit var eventTypeSpinner: Spinner
