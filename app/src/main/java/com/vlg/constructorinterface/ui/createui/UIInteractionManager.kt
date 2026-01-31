@@ -30,11 +30,12 @@ class UIInteractionManager(
         trashArea: LinearLayout,
         placementHint: TextView
     ): View {
-        Log.d("DragDebug", "createElement: $elementType")
+        Log.d("!! DragDebug", "createElement: $elementType")
 
         val elementId = elementManager.incrementCounter()
         val elementFactory = ElementFactory(context)
 
+        Log.d("!! DragDebug", "element id $elementId")
         val elementPair = when (elementType) {
             Type.TEXTVIEW.name -> elementFactory.createTextView(elementId = elementId)
             Type.EDITTEXT.name -> elementFactory.createEditText(elementId = elementId)
@@ -108,15 +109,17 @@ class UIInteractionManager(
             SettingComponentFragment.OnSettingCompleteListener {
             override fun onSettingsSaved(tag: String, newText: String, newTag: String) {
                 elementManager.updateElement(element.id) {
+                    Log.d("!!! update", it.tag + " " + newTag)
                     it.tag = newTag
                     it.text = newText
                 }
-
                 if (element.type == Type.EDITTEXT) {
                     workArea.findViewById<EditText>(element.id).hint = newText
                 } else {
                     workArea.findViewById<TextView>(element.id).text = newText
                 }
+
+                workArea.findViewById<View>(element.id).tag = newTag
             }
 
             override fun onSettingsCancelled() {}

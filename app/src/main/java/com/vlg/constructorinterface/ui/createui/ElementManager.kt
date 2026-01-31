@@ -23,5 +23,5 @@ class ElementManager {
         elementsMap[elementId]?.let(update)
     }
 
-    fun incrementCounter(): Int = ++elementCounter
+    fun incrementCounter(): Int = elementCounter++
 }

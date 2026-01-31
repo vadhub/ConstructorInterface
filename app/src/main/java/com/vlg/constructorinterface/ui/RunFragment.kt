@@ -68,6 +68,8 @@ class RunFragment : BaseFragment() {
 
         eventDelegate.setOnMathOperation {
             val substituted = mathExecutor.substituteVariablesView(it.expression, creatorUI.getElementsMap().map { (_, value) -> value })
+            Log.d("!!!", creatorUI.getElementsMap().toString())
+            Log.d("!!!", substituted)
             if (Regex("\\b[a-zA-Z][a-zA-Z0-9_]*\\b").containsMatchIn(substituted)) {
                 throw IllegalArgumentException("Unresolved variables in expression: $substituted")
             }
@@ -79,7 +81,9 @@ class RunFragment : BaseFragment() {
 
         eventDelegate.setOnAddText {
             val substituted = mathExecutor.substituteVariablesView(it.newText, creatorUI.getElementsMap().map { (_, value) -> value })
-            workArea.findViewById<TextView>(it.idResult?:-1)?.text = substituted
+            val textView = workArea.findViewById<TextView>(it.idResult?:-1)
+            val text = textView?.text
+            textView.text = text.toString()+substituted
         }
 
         eventDelegate.setOnOpenTable {
