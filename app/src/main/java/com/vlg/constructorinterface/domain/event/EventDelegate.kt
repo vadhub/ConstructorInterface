@@ -9,6 +9,7 @@ class EventDelegate() {
     private var openTable: (ElementEvent.OpenTable) -> Unit = {}
     private var mathOperation: (ElementEvent.MathOperation) -> Unit = {}
     private var addText: (ElementEvent.AddText) -> Unit = {}
+    private var changeText: (ElementEvent.ChangeText) -> Unit = {}
     private var toastEvent: (ElementEvent.ShowToast) -> Unit = {}
     private var dialogEvent: (ElementEvent.ShowDialog) -> Unit = {}
 
@@ -40,6 +41,10 @@ class EventDelegate() {
         this.dialogEvent = showDialog
     }
 
+    fun setOnChangeText(changeText: (ElementEvent.ChangeText) -> Unit) {
+        this.changeText = changeText
+    }
+
     fun eventToast(event: ElementEvent.ShowToast) {
         toastEvent.invoke(event)
     }
@@ -66,5 +71,9 @@ class EventDelegate() {
 
     fun eventAddText(event: ElementEvent.AddText) {
         addText.invoke(event)
+    }
+
+    fun eventChangeText(event: ElementEvent.ChangeText) {
+        changeText.invoke(event)
     }
 }

@@ -14,6 +14,7 @@ class ActionExecutor(private val eventDelegate: EventDelegate) {
                 is ElementEvent.DeleteEntry -> eventDelegate.eventDeleteEntry(it)
                 is ElementEvent.OpenTable -> eventDelegate.eventOpenTable(it)
                 is ElementEvent.AddText -> eventDelegate.eventAddText(it)
+                is ElementEvent.ChangeText -> eventDelegate.eventChangeText(it)
                 is ElementEvent.MathOperation -> eventDelegate.eventMath(it)
                 else -> throw IllegalArgumentException("Unsupported event type: ${it::class.simpleName}")
             }

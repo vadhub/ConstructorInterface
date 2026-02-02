@@ -86,6 +86,11 @@ class RunFragment : BaseFragment() {
             textView.text = text.toString()+substituted
         }
 
+        eventDelegate.setOnChangeText {
+            val substituted = mathExecutor.substituteVariablesView(it.newText, creatorUI.getElementsMap().map { (_, value) -> value })
+            workArea.findViewById<TextView>(it.idResult)?.text = substituted
+        }
+
         eventDelegate.setOnOpenTable {
             val fragment = TableDataFragment()
             val bundle = Bundle()

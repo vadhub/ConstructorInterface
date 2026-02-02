@@ -10,8 +10,8 @@ sealed class ElementEvent {
     data class DeleteEntry(val tableName: String) : ElementEvent()
     data class OpenTable(val tableName: String) : ElementEvent()
     data class GetTextFromEditText(val editTextId: Int) : ElementEvent()
-    data class ChangeText(val newText: String) : ElementEvent()
-    data class RunCustomCode(val code: String) : ElementEvent()
+    data class ChangeText(val newText: String, val idResult: Int) : ElementEvent()
+    data class RunCustomCode(val code: String,) : ElementEvent()
     data class MathOperation(
         val expression: String,
         val resultVar: String? = null,
@@ -135,6 +135,7 @@ fun ElementEvent.toJson(): JSONObject {
             is ElementEvent.ChangeText -> {
                 put("type", "ChangeText")
                 put("newText", newText)
+                put("idResult", idResult)
             }
 
             is ElementEvent.AddText -> {
@@ -219,7 +220,8 @@ fun JSONObject.toElementEvent(): ElementEvent {
 
         "ChangeText" -> {
             val newText = getString("newText")
-            ElementEvent.ChangeText(newText)
+            val idResult = optInt("idResult", -1)
+            ElementEvent.ChangeText(newText, idResult)
         }
 
         "RunCustomCode" -> {

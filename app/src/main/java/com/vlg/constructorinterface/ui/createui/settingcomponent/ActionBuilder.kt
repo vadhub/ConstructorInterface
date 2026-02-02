@@ -84,8 +84,12 @@ class ActionBuilder(
                 if (newText.isNullOrEmpty()) {
                     Toast.makeText(context, "Введите новый текст", Toast.LENGTH_SHORT).show()
                     null
+                } else if (selectedElement == null) {
+                    Toast.makeText(context, "Выберите элемент для результата", Toast.LENGTH_SHORT)
+                        .show()
+                    null
                 } else {
-                    ElementEvent.ChangeText(newText)
+                    ElementEvent.ChangeText(newText, idResult = selectedElement.id)
                 }
             }
 

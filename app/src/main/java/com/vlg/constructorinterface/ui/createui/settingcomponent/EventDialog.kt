@@ -21,7 +21,11 @@ import com.vlg.constructorinterface.model.ElementEvent
 import com.vlg.constructorinterface.ui.createui.CreatorUI
 import kotlin.random.Random
 
-class EventDialog(private val viewId: Int, private val creatorUI: CreatorUI, private val event: ElementEvent? = null) :
+class EventDialog(
+    private val viewId: Int,
+    private val creatorUI: CreatorUI,
+    private val event: ElementEvent? = null
+) :
     DialogFragment() {
 
     private lateinit var eventTypeSpinner: Spinner
@@ -212,13 +216,30 @@ class EventDialog(private val viewId: Int, private val creatorUI: CreatorUI, pri
             }
 
             ActionType.CHANGE_TEXT -> {
-                val newText = eventTypeUIHandler.getExpression()
-                actionBuilder.buildElementEvent(ActionType.CHANGE_TEXT, newText = newText)
+                val expression = eventTypeUIHandler.getExpression()
+                val selectedPosition = eventTypeUIHandler.getSelectedResultSpinnerPosition()
+
+                if (selectedPosition < 0 || selectedPosition >= elementInfoList.size) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Выберите элемент для результата",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return null
+                }
+
+                val selectedElement = elementInfoList[selectedPosition]
+
+                actionBuilder.buildElementEvent(
+                    ActionType.CHANGE_TEXT,
+                    newText = expression,
+                    selectedElement = selectedElement
+                )
             }
 
             else -> null
         }
 
-        return event?.let { ElementAction(Random.nextInt(),mutableListOf(it), viewId, "") }
+        return event?.let { ElementAction(Random.nextInt(), mutableListOf(it), viewId, "") }
     }
 }
