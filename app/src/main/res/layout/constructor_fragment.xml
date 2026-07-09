@@ -5,7 +5,6 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- Рабочая область (70% экрана) -->
     <LinearLayout
         android:id="@+id/workArea"
         android:layout_width="match_parent"
@@ -15,7 +14,6 @@
         android:background="@android:color/white"
         android:padding="8dp">
 
-        <!-- Подсказка (будет удалена при добавлении первого элемента) -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -63,7 +61,6 @@
 
     </LinearLayout>
 
-    <!-- Палитра компонентов (30% экрана) -->
     <GridLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -72,7 +69,6 @@
 
         android:rowCount="2">
 
-        <!-- Текстовое поле -->
         <LinearLayout
             android:id="@+id/textViewPalette"
             android:layout_width="0dp"
@@ -101,7 +97,6 @@
 
         </LinearLayout>
 
-        <!-- Поле ввода -->
         <LinearLayout
             android:id="@+id/editTextPalette"
             android:layout_width="0dp"
@@ -130,7 +125,6 @@
 
         </LinearLayout>
 
-        <!-- Кнопка -->
         <LinearLayout
             android:id="@+id/buttonPalette"
             android:layout_width="0dp"
@@ -217,7 +211,6 @@
 
         </LinearLayout>
 
-        <!-- Заглушка для элемента -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"

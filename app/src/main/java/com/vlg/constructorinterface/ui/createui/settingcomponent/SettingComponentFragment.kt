@@ -230,6 +230,8 @@ class SettingComponentFragment : DialogFragment() {
     private fun showSimpleAlertDialog(event: ElementEvent) {
         val builder = AlertDialog.Builder(context)
 
+        Toast.makeText(context, "Edit", Toast.LENGTH_SHORT).show()
+
         builder.setTitle(event.info())
         builder.setMessage(event.infoFull())
 
